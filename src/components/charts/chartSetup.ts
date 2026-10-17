@@ -46,7 +46,24 @@ export const chartTheme = {
     increase: '#f43f5e', // rose-500
     decrease: '#0d9488', // teal-600
   },
+  // Categorical slots, assigned in this fixed order (never cycled). Validated as a set on
+  // the dark surface for adjacent marks: worst CVD ΔE 8.4, normal-vision ΔE 19.3.
+  // A 7th+ group folds into `other` instead of getting a generated hue.
+  categorical: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300'],
+  other: '#475569', // slate-600, neutral for "Khác"
 } as const;
+
+/** Dark ink on light marks, light ink on dark marks, for labels drawn inside a mark. */
+export function inkFor(hex: string): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const channel = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance =
+    0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+  return luminance > 0.18 ? '#020617' : '#f8fafc';
+}
 
 // Canvas text doesn't inherit CSS fonts, so the chart font is set explicitly
 export const CHART_FONT_FAMILY = 'Inter, sans-serif';

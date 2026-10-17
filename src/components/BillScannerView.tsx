@@ -20,6 +20,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Bill, BillItemWithTrend } from '../types/bill';
+import { AppTab } from '../types/navigation';
 import { formatVND, formatPercent } from '../utils/currency';
 import { enrichBillItemsWithTrends } from '../utils/priceTracker';
 import { QUICK_DEMO_BILLS, SampleQuickBill } from '../data/sampleBills';
@@ -29,7 +30,7 @@ interface BillScannerViewProps {
   existingBills: Bill[];
   /** Resolves true once stored on the server */
   onSaveBill: (bill: Bill) => Promise<boolean>;
-  onNavigateTab: (tab: 'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive') => void;
+  onNavigateTab: (tab: AppTab) => void;
 }
 
 export const BillScannerView: React.FC<BillScannerViewProps> = ({

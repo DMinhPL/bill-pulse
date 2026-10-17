@@ -10,12 +10,14 @@ import {
   Download,
   AlertTriangle,
   LogOut,
-  Loader2
+  Loader2,
+  Tags
 } from 'lucide-react';
+import { AppTab } from '../types/navigation';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive';
-  setActiveTab: (tab: 'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive') => void;
+  activeTab: AppTab;
+  setActiveTab: (tab: AppTab) => void;
   increasedCount: number;
   totalBills: number;
   userName: string;
@@ -83,7 +85,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-1">
+          {/* Scrolls sideways instead of overflowing the header if the tabs ever don't fit */}
+          <nav className="hidden xl:flex items-center gap-1 min-w-0 overflow-x-auto [scrollbar-width:none]">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`${navItemBase} ${activeTab === 'dashboard'
@@ -127,6 +130,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab('categories')}
+              className={`${navItemBase} ${activeTab === 'categories'
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                  : navItemInactive
+                }`}
+            >
+              <Tags className="w-4 h-4 shrink-0 text-amber-400" />
+              Danh mục
+            </button>
+
+            <button
               onClick={() => setActiveTab('bills')}
               className={`${navItemBase} ${activeTab === 'bills'
                   ? 'bg-slate-800 text-white border-slate-700'
@@ -153,11 +167,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={onOpenAIInsights}
-              className="hidden lg:flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium whitespace-nowrap bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-200 border border-purple-500/30 hover:bg-purple-500/30 transition-all shadow-sm"
+              className="hidden lg:flex items-center gap-1.5 h-9 px-3 xl:px-2.5 rounded-lg text-xs font-medium whitespace-nowrap bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-200 border border-purple-500/30 hover:bg-purple-500/30 transition-all shadow-sm"
               title="Phân tích tình hình giá cả bằng Gemini AI"
+              aria-label="AI Phân tích"
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0 text-purple-400" />
-              AI Phân tích
+              {/* Icon-only when the full menu shares the row (xl+), to leave room for 7 tabs */}
+              <span className="xl:sr-only">AI Phân tích</span>
             </button>
 
             <button
@@ -228,6 +244,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 +{increasedCount}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('categories')}
+            className={`${mobileItemBase} ${activeTab === 'categories' ? 'bg-amber-500/20 text-amber-300' : 'text-slate-400'
+              }`}
+          >
+            <Tags className="w-3.5 h-3.5 text-amber-400" />
+            Danh mục
           </button>
           <button
             onClick={() => setActiveTab('bills')}

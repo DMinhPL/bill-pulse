@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Bill } from './types/bill';
+import { AppTab } from './types/navigation';
+import { CategoryBrowserView } from './components/CategoryBrowserView';
 import { computePriceHistoryMap } from './utils/priceTracker';
 import { authApi, billsApi, ApiError, AuthUser } from './utils/api';
 import { Navbar } from './components/Navbar';
@@ -22,7 +24,7 @@ export default function App() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [billsLoading, setBillsLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive'>('dashboard');
+  const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [selectedBillForModal, setSelectedBillForModal] = useState<Bill | null>(null);
   const [selectedItemForDeepDive, setSelectedItemForDeepDive] = useState<string | null>(null);
   const [isAIInsightsOpen, setIsAIInsightsOpen] = useState(false);
@@ -220,6 +222,13 @@ export default function App() {
                 priceTrends={priceTrends}
                 onSelectItemDeepDive={handleSelectItemDeepDive}
                 onOpenAIInsights={() => setIsAIInsightsOpen(true)}
+              />
+            )}
+
+            {activeTab === 'categories' && (
+              <CategoryBrowserView
+                priceTrends={priceTrends}
+                onSelectItemDeepDive={handleSelectItemDeepDive}
               />
             )}
 

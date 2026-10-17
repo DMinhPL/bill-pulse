@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -12,16 +12,20 @@ import {
   ShieldCheck,
   Zap,
   Sparkles,
-  History as HistoryIcon
+  History as HistoryIcon,
+  PieChart
 } from 'lucide-react';
 import { Bill, PriceTrendSummary } from '../types/bill';
+import { AppTab } from '../types/navigation';
 import { formatVND, formatPercent } from '../utils/currency';
 import { getTopPriceIncreases, getTopPriceDecreases } from '../utils/priceTracker';
+import { SpendingShareChart, computeSpendingShare, MonthRange, formatMonthKey } from './charts/SpendingShareChart';
+import { MonthRangePicker, MonthRangePreset, rangeForPreset } from './MonthRangePicker';
 
 interface DashboardViewProps {
   bills: Bill[];
   priceTrends: PriceTrendSummary[];
-  onNavigateTab: (tab: 'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive') => void;
+  onNavigateTab: (tab: AppTab) => void;
   onSelectItemDeepDive: (itemName: string) => void;
   onSelectBill: (bill: Bill) => void;
   onOpenAIInsights: () => void;
@@ -60,6 +64,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
   const recentBills = sortedBills.slice(0, 3);
+
+  // Monthly spending split by product group, for the selected month range
+  const [sharePreset, setSharePreset] = useState<MonthRangePreset>('12m');
+  const [shareCustomRange, setShareCustomRange] = useState<MonthRange>({});
+  const shareRange = sharePreset === 'custom' ? shareCustomRange : rangeForPreset(sharePreset);
+  const spendingShare = useMemo(
+    () => computeSpendingShare(bills, shareRange),
+    [bills, shareRange.from, shareRange.to]
+  );
+  const shareMonths = spendingShare.availableMonths;
+  // The custom selects always show the months actually on screen
+  const shownFrom = spendingShare.months[0]?.key ?? shareMonths[0] ?? '';
+  const shownTo = spendingShare.months[spendingShare.months.length - 1]?.key ?? shareMonths[shareMonths.length - 1] ?? '';
 
   return (
     <div className="space-y-6">
@@ -207,6 +224,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Spending share by product group over time */}
+      <section className="dashboard__spending-share bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-lg">
+        <div className="dashboard__spending-share-header flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-slate-800">
+          <div>
+            <h3 className="dashboard__spending-share-title font-semibold text-white text-base flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-slate-400" />
+              Tỉ lệ phân bổ mua sắm theo nhóm sản phẩm
+            </h3>
+            <p className="dashboard__spending-share-subtitle text-xs text-slate-400 mt-1">
+              Mỗi cột là 100% chi tiêu của tháng đó, chia theo nhóm sản phẩm (tính theo thành tiền từng món).
+            </p>
+          </div>
+          {spendingShare.months.length > 0 && (
+            <span className="dashboard__spending-share-range text-xs text-slate-400 shrink-0">
+              {shownFrom === shownTo
+                ? `Tháng ${formatMonthKey(shownFrom)}`
+                : `${formatMonthKey(shownFrom)} – ${formatMonthKey(shownTo)} · ${spendingShare.months.length} tháng có chi tiêu`}
+            </span>
+          )}
+        </div>
+
+        {/* Date range: presets first, then a custom from/to */}
+        {shareMonths.length > 0 && (
+          <MonthRangePicker
+            className="dashboard__spending-share-filters mt-3"
+            availableMonths={shareMonths}
+            preset={sharePreset}
+            from={shownFrom}
+            to={shownTo}
+            onPresetChange={setSharePreset}
+            onCustomChange={range => {
+              setShareCustomRange(range);
+              setSharePreset('custom');
+            }}
+          />
+        )}
+
+        {shareMonths.length === 0 ? (
+          <p className="dashboard__spending-share-empty text-center py-10 text-xs text-slate-500">
+            Chưa có dữ liệu chi tiêu. Quét hóa đơn đầu tiên để xem tỉ lệ phân bổ theo nhóm sản phẩm.
+          </p>
+        ) : spendingShare.months.length === 0 ? (
+          <p className="dashboard__spending-share-empty text-center py-10 text-xs text-slate-500">
+            Không có chi tiêu nào trong khoảng thời gian này. Hãy chọn khoảng khác hoặc "Tất cả".
+          </p>
+        ) : (
+          <div className="dashboard__spending-share-body mt-4 flex flex-col lg:flex-row gap-5">
+            <SpendingShareChart className="dashboard__spending-share-canvas h-72 flex-1 min-w-0" share={spendingShare} />
+
+            {/* Legend: colour, group name and share of all spending in the period */}
+            <ul className="dashboard__spending-share-legend lg:w-64 shrink-0 grid grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-2 content-start">
+              {spendingShare.groups.map(group => (
+                <li key={group.name} className="dashboard__spending-share-legend-item flex items-center gap-2 min-w-0 text-xs">
+                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: group.color }} />
+                  <span className="truncate text-slate-300" title={group.name}>{group.name}</span>
+                  <span className="ml-auto pl-2 tabular-nums font-semibold text-slate-200">
+                    {group.overallShare.toFixed(1)}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
 
       {/* Main Two-Column Analysis Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
