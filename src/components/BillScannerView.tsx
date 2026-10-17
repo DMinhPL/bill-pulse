@@ -16,16 +16,19 @@ import {
   Store,
   CreditCard,
   Receipt,
-  FileCheck
+  FileCheck,
+  Loader2
 } from 'lucide-react';
 import { Bill, BillItemWithTrend } from '../types/bill';
 import { formatVND, formatPercent } from '../utils/currency';
 import { enrichBillItemsWithTrends } from '../utils/priceTracker';
 import { QUICK_DEMO_BILLS, SampleQuickBill } from '../data/sampleBills';
+import { trackedFetch } from '../utils/api';
 
 interface BillScannerViewProps {
   existingBills: Bill[];
-  onSaveBill: (bill: Bill) => void;
+  /** Resolves true once stored on the server */
+  onSaveBill: (bill: Bill) => Promise<boolean>;
   onNavigateTab: (tab: 'dashboard' | 'scan' | 'watchlist' | 'bills' | 'deepdive') => void;
 }
 
@@ -38,6 +41,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<'image' | 'pdf'>('image');
   const [isScanning, setIsScanning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [scanStep, setScanStep] = useState<string>('');
   const [scanError, setScanError] = useState<string | null>(null);
 
@@ -102,9 +106,9 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
     setScanError(null);
 
     try {
-      setScanStep('2/3 Gemini 3.8 Flash đang đọc chi tiết từng mặt hàng & giá VND...');
+      setScanStep('2/3 Gemini AI đang đọc chi tiết từng mặt hàng & giá VND...');
 
-      const response = await fetch('/api/scan-bill', {
+      const response = await trackedFetch('/api/scan-bill', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -272,8 +276,8 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
   };
 
   // Finalize and save
-  const handleSaveToHistory = () => {
-    if (!stagedBill) return;
+  const handleSaveToHistory = async () => {
+    if (!stagedBill || isSaving) return;
 
     const newBillRecord: Bill = {
       id: `bill_${Date.now()}`,
@@ -306,7 +310,12 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
       createdAt: new Date().toISOString(),
     };
 
-    onSaveBill(newBillRecord);
+    setIsSaving(true);
+    const saved = await onSaveBill(newBillRecord);
+    setIsSaving(false);
+    // On failure keep the reviewed bill on screen so nothing has to be re-scanned
+    if (!saved) return;
+
     setStagedBill(null);
     setFile(null);
     setFilePreview(null);
@@ -471,16 +480,19 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
                   setFile(null);
                   setFilePreview(null);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                disabled={isSaving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
                 Hủy & Quét lại
               </button>
               <button
                 onClick={handleSaveToHistory}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-md flex items-center gap-1.5 transition-all"
+                disabled={isSaving}
+                aria-busy={isSaving}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-md flex items-center gap-1.5 transition-all disabled:opacity-80 disabled:cursor-wait"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                Lưu vào hệ thống theo dõi
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                {isSaving ? 'Đang lưu...' : 'Lưu vào hệ thống theo dõi'}
               </button>
             </div>
           </div>

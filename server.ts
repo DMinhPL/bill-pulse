@@ -1,8 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
+import { authRouter, requireAuth } from './server/auth';
+import { billsRouter } from './server/bills';
 
 dotenv.config();
 
@@ -11,10 +14,16 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+// Gemini model used for bill scanning and price analysis
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
 // Set payload limit high enough for image and pdf uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Accounts and per-user bill storage (PostgreSQL)
+app.use('/api/auth', authRouter);
+app.use('/api/bills', requireAuth, billsRouter);
 
 // Initialize GoogleGenAI SDK server-side
 const ai = new GoogleGenAI({
@@ -26,8 +35,8 @@ const ai = new GoogleGenAI({
   },
 });
 
-// Endpoint: Scan and extract bill details using Gemini 3.8 Flash
-app.post('/api/scan-bill', async (req, res) => {
+// Endpoint: Scan and extract bill details using Gemini
+app.post('/api/scan-bill', requireAuth, async (req, res) => {
   try {
     const { fileBase64, mimeType, fileName } = req.body;
 
@@ -94,7 +103,7 @@ Do not wrap with markdown code fences if possible, or provide strict JSON.`;
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: GEMINI_MODEL,
       contents: { parts: [filePart, textPart] },
       config: {
         responseMimeType: 'application/json',
@@ -156,7 +165,7 @@ Do not wrap with markdown code fences if possible, or provide strict JSON.`;
 });
 
 // Endpoint: AI inflation summary analysis
-app.post('/api/analyze-inflation', async (req, res) => {
+app.post('/api/analyze-inflation', requireAuth, async (req, res) => {
   try {
     const { itemsComparison } = req.body;
     if (!itemsComparison || !Array.isArray(itemsComparison) || itemsComparison.length === 0) {
@@ -180,7 +189,7 @@ Return as a short JSON object:
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: GEMINI_MODEL,
       contents: promptText,
       config: {
         responseMimeType: 'application/json',
@@ -200,24 +209,63 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Setup Vite middleware in dev or static files in production
+const NOT_FOUND_PAGE = `<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Không tìm thấy trang</title>
+  </head>
+  <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#020617;color:#cbd5e1;font-family:Inter,system-ui,sans-serif;text-align:center">
+    <main>
+      <p style="font-size:48px;font-weight:800;margin:0;color:#f8fafc">404</p>
+      <p style="margin:8px 0 24px">Không tìm thấy trang bạn yêu cầu.</p>
+      <a href="/" style="color:#34d399;font-weight:600;text-decoration:none">← Về trang chủ BillPulse</a>
+    </main>
+  </body>
+</html>`;
+
+// The app is a single page served only at "/". Every other path is a 404:
+// no SPA fallback, so unknown URLs never render the app.
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      // 'custom' disables Vite's own index.html fallback; "/" is served explicitly below
+      appType: 'custom',
     });
-    app.use(vite.middlewares);
+    app.use(vite.middlewares); // module/asset requests only (/src, /@vite, /node_modules)
+
+    app.get('/', async (req, res, next) => {
+      try {
+        const template = await fs.readFile(path.resolve(__dirname, 'index.html'), 'utf8');
+        const html = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).type('html').send(html);
+      } catch (err: any) {
+        vite.ssrFixStacktrace(err);
+        next(err);
+      }
+    });
   } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
-    app.get('*', (req, res) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    const distDir = path.resolve(__dirname, 'dist');
+    // Hashed build assets only; index.html is not exposed as a file
+    app.use('/assets', express.static(path.join(distDir, 'assets'), { immutable: true, maxAge: '1y' }));
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(distDir, 'index.html'));
     });
   }
 
+  // Unknown API endpoints answer in JSON, everything else gets the 404 page
+  app.use('/api', (req, res) => {
+    res.status(404).json({ error: 'Không tìm thấy API.' });
+  });
+  app.use((req, res) => {
+    res.status(404).type('html').send(NOT_FOUND_PAGE);
+  });
+
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:${PORT}`);
+    console.log(`Server running at http://0.0.0.0:${PORT} (Gemini model: ${GEMINI_MODEL})`);
   });
 }
 

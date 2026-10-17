@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PriceTrendSummary, InflationAnalysis } from '../types/bill';
 import { formatVND, formatPercent } from '../utils/currency';
+import { trackedFetch } from '../utils/api';
 
 interface AIInsightsModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const AIInsightsModal: React.FC<AIInsightsModalProps> = ({
         lastStore: t.lastStore,
       }));
 
-      const res = await fetch('/api/analyze-inflation', {
+      const res = await trackedFetch('/api/analyze-inflation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemsComparison: itemsPayload }),

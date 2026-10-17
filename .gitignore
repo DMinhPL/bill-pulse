@@ -6,3 +6,12 @@ coverage/
 *.log
 .env*
 !.env.example
+.gitnexus
+
+.claude/
+.knowns/
+.codex/
+.mcp.json
+AGENTS.md
+CLAUDE.md
+.agents/

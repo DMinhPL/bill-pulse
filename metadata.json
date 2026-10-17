@@ -1,6 +1,8 @@
 {
-  "name": "BillPulse VN - Smart Bill & Price Inflation Monitor",
+  "name": "BillPulse75 - Smart Bill & Price Inflation Monitor",
   "description": "Scan and analyze Vietnamese bills and invoices from screenshots or PDFs. Track item price changes over time, detect price increases in VND, and monitor spending trends.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
