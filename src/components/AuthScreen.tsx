@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Receipt, AtSign, Mail, Lock, User, Loader2, AlertCircle, TrendingUp, ScanLine, Sparkles } from 'lucide-react';
 import { authApi, AuthUser } from '../utils/api';
 
+export type AuthMode = 'login' | 'register';
+type Mode = AuthMode;
+
 interface AuthScreenProps {
+  /** Which form to show; driven by the URL (/login or /register) */
+  mode: AuthMode;
+  onSwitchMode: (mode: AuthMode) => void;
   onAuthenticated: (user: AuthUser) => void;
 }
-
-type Mode = 'login' | 'register';
 
 const inputClass =
   'w-full h-11 pl-10 pr-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all';
 
-export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
-  const [mode, setMode] = useState<Mode>('login');
+export const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSwitchMode, onAuthenticated }) => {
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -21,11 +24,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const switchMode = (next: Mode) => {
-    setMode(next);
+  // Clear errors and passwords whenever the form changes, including via the back button
+  useEffect(() => {
     setError(null);
     setPassword('');
     setConfirmPassword('');
+  }, [mode]);
+
+  const switchMode = (next: Mode) => {
+    if (next !== mode) onSwitchMode(next);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

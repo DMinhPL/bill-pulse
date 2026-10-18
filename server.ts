@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { authRouter, requireAuth } from './server/auth';
 import { billsRouter } from './server/bills';
+import { PAGE_ROUTE_PATTERNS } from './src/routes';
 
 dotenv.config();
 
@@ -225,19 +226,19 @@ const NOT_FOUND_PAGE = `<!doctype html>
   </body>
 </html>`;
 
-// The app is a single page served only at "/". Every other path is a 404:
-// no SPA fallback, so unknown URLs never render the app.
+// The app is served only for its known page URLs (PAGE_ROUTE_PATTERNS, shared with
+// the client router). Every other path is a 404: no catch-all SPA fallback.
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      // 'custom' disables Vite's own index.html fallback; "/" is served explicitly below
+      // 'custom' disables Vite's own index.html fallback; page URLs are served explicitly below
       appType: 'custom',
     });
     app.use(vite.middlewares); // module/asset requests only (/src, /@vite, /node_modules)
 
-    app.get('/', async (req, res, next) => {
+    app.get(PAGE_ROUTE_PATTERNS, async (req, res, next) => {
       try {
         const template = await fs.readFile(path.resolve(__dirname, 'index.html'), 'utf8');
         const html = await vite.transformIndexHtml(req.originalUrl, template);
@@ -251,7 +252,7 @@ async function startServer() {
     const distDir = path.resolve(__dirname, 'dist');
     // Hashed build assets only; index.html is not exposed as a file
     app.use('/assets', express.static(path.join(distDir, 'assets'), { immutable: true, maxAge: '1y' }));
-    app.get('/', (req, res) => {
+    app.get(PAGE_ROUTE_PATTERNS, (req, res) => {
       res.sendFile(path.join(distDir, 'index.html'));
     });
   }

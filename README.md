@@ -61,7 +61,7 @@ Open http://localhost:3000 and register an account.
 
 | Command           | What it does                                                   |
 | ----------------- | -------------------------------------------------------------- |
-| `pnpm dev`        | Starts Express with Vite middleware (hot reload)               |
+| `pnpm dev`        | Starts Express with Vite middleware; the frontend hot-reloads and the server restarts on server code changes |
 | `pnpm build`      | Builds the frontend into `dist/`                               |
 | `pnpm start`      | Starts the server (set `NODE_ENV=production` to serve `dist/`) |
 | `pnpm lint`       | Type-checks with `tsc --noEmit`                                |
@@ -99,6 +99,22 @@ AIInsightsModal ── POST /api/analyze-inflation ──▶ price changes ─�
 3. **Track**: on every change, `computePriceHistoryMap` replays all bills from oldest to newest and groups items by product. Two names count as the same product if they are equal after removing accents and casing, or if their words overlap by more than 80%.
 4. **Analyze**: `/api/analyze-inflation` sends up to 20 price changes to Gemini and returns a summary, observations and recommendations.
 
+### Pages
+
+Every page has its own URL (React Router). The server serves the app only for these patterns, defined once in `src/routes.ts`, and answers 404 for anything else.
+
+| URL | Page |
+| --- | --- |
+| `/` | Tổng quan (dashboard) |
+| `/login`, `/register` | Đăng nhập / Đăng ký (`?redirect=` returns you to the page you asked for) |
+| `/scan` | Quét hóa đơn |
+| `/prices` | Biến động giá |
+| `/categories`, `/categories/:categorySlug` | Danh mục; e.g. `/categories/sua-bo-trung` |
+| `/bills`, `/bills/:billId` | Lịch sử hóa đơn; `/bills/:billId` opens that bill's details |
+| `/items`, `/items/:itemSlug` | Chi tiết mặt hàng; e.g. `/items/gao-thom-st25-ong-cua-tui-5kg` |
+
+Signed-out visitors are redirected to `/login?redirect=…`. A slug or bill ID that doesn't match your data shows an in-page "not found" message.
+
 ### API
 
 | Method | Route                     | Body                                          | Returns                            |
@@ -128,7 +144,12 @@ server/
 db/schema.sql              Tables and price-trend views
 scripts/db/migrate.ts      Applies the schema
 src/
-  App.tsx                  Root component: tabs, bill state, localStorage sync
+  main.tsx                 Router and app-wide providers
+  App.tsx                  Route table
+  routes.ts                Page URLs, route patterns (shared with the server), slug helpers
+  context/AppDataContext.tsx  Session, bills and actions shared by every page
+  layouts/AppLayout.tsx    Navbar, footer, toast and AI popup around signed-in pages; login guard
+  pages/                   One file per URL, connecting the router to a view
   components/
     DashboardView.tsx      Spending overview and biggest price changes
     BillScannerView.tsx    Upload, demo bills, review and edit before saving

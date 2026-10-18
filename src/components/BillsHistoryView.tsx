@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   History as HistoryIcon,
   Receipt,
@@ -16,6 +16,11 @@ import {
 import { Bill } from '../types/bill';
 import { formatVND } from '../utils/currency';
 import { formatDateShort } from '../utils/date';
+import { Pagination } from './Pagination';
+
+// Multiples of 6 fill whole rows of the 1-, 2- and 3-column grid
+const DEFAULT_PAGE_SIZE = 6;
+const PAGE_SIZE_OPTIONS = [6, 12, 24];
 
 interface BillsHistoryViewProps {
   bills: Bill[];
@@ -32,6 +37,9 @@ export const BillsHistoryView: React.FC<BillsHistoryViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMerchant, setSelectedMerchant] = useState<string>('ALL');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Extract unique merchants
   const merchants = Array.from(new Set(bills.map(b => b.merchantName)));
@@ -54,6 +62,20 @@ export const BillsHistoryView: React.FC<BillsHistoryViewProps> = ({
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const totalSpentAllBills = bills.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+
+  // A new search, store filter or page size starts again from page 1
+  useEffect(() => setPage(1), [searchQuery, selectedMerchant, pageSize]);
+
+  // Clamp in case the list shrank (e.g. the last bill on a page was deleted)
+  const pageCount = Math.max(1, Math.ceil(filteredBills.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pagedBills = filteredBills.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    // Bring the top of the grid back into view when paging from the bottom controls
+    gridRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
 
   return (
     <div className="bills-history space-y-6">
@@ -114,8 +136,9 @@ export const BillsHistoryView: React.FC<BillsHistoryViewProps> = ({
           <p className="text-slate-400 text-sm">Chưa tìm thấy hóa đơn nào phù hợp.</p>
         </div>
       ) : (
-        <div className="bills-history__grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredBills.map(bill => (
+        <>
+        <div ref={gridRef} className="bills-history__grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
+          {pagedBills.map(bill => (
             <div
               key={bill.id}
               className="bill-card p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between shadow-md group"
@@ -219,6 +242,20 @@ export const BillsHistoryView: React.FC<BillsHistoryViewProps> = ({
             </div>
           ))}
         </div>
+
+        {filteredBills.length > DEFAULT_PAGE_SIZE && (
+          <Pagination
+            className="bills-history__pagination"
+            page={currentPage}
+            pageSize={pageSize}
+            totalItems={filteredBills.length}
+            onPageChange={goToPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            itemLabel="hóa đơn"
+          />
+        )}
+        </>
       )}
     </div>
   );

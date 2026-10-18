@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Tags,
   Search,
@@ -14,8 +14,11 @@ import {
 import { PriceTrendSummary } from '../types/bill';
 import { formatVND, formatPercent } from '../utils/currency';
 import { formatDateShort } from '../utils/date';
+import { Pagination } from './Pagination';
+import { useHeightVar } from '../hooks/useHeightVar';
 
 const ALL = 'ALL';
+const DEFAULT_PAGE_SIZE = 10;
 const UNCATEGORIZED = 'Chưa phân loại';
 
 type SortKey = 'SPENT' | 'TIMES' | 'RECENT' | 'NAME';
@@ -27,7 +30,8 @@ interface CategorySummary {
   purchaseCount: number;
 }
 
-const categoryOf = (t: PriceTrendSummary) => t.category?.trim() || UNCATEGORIZED;
+/** The category a product is listed under (empty categories become 'Chưa phân loại'). */
+export const categoryOf = (t: PriceTrendSummary) => t.category?.trim() || UNCATEGORIZED;
 
 /** Products grouped by their known category, biggest spending first. */
 function groupByCategory(trends: PriceTrendSummary[]): CategorySummary[] {
@@ -73,13 +77,45 @@ const TrendBadge: React.FC<{ item: PriceTrendSummary }> = ({ item }) => {
 
 interface CategoryBrowserViewProps {
   priceTrends: PriceTrendSummary[];
+  /** Selected category name, or null for all categories (comes from the URL) */
+  selectedCategory: string | null;
+  onSelectCategory: (category: string | null) => void;
   onSelectItemDeepDive: (itemName: string) => void;
 }
 
-export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceTrends, onSelectItemDeepDive }) => {
-  const [selected, setSelected] = useState<string>(ALL);
+export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({
+  priceTrends,
+  selectedCategory,
+  onSelectCategory,
+  onSelectItemDeepDive,
+}) => {
+  const selected = selectedCategory ?? ALL;
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('SPENT');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [isHeaderStuck, setIsHeaderStuck] = useState(false);
+  // The category sidebar sticks below this header, so publish its height
+  useHeightVar(headerRef, '--category-header-h');
+
+  // Show the header's border/shadow only once it is pinned to the top
+  useEffect(() => {
+    const onScroll = () => {
+      const header = headerRef.current;
+      if (!header) return;
+      const offset = parseFloat(getComputedStyle(header).top) || 0;
+      setIsHeaderStuck(window.scrollY > 0 && header.getBoundingClientRect().top <= offset + 0.5);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
   const categories = useMemo(() => groupByCategory(priceTrends), [priceTrends]);
   const active = categories.find(c => c.name === selected);
@@ -93,6 +129,20 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
       .sort(SORTERS[sortBy]);
   }, [scope, query, sortBy]);
 
+  // A new category, search, sort or page size starts again from page 1
+  useEffect(() => setPage(1), [selected, query, sortBy, pageSize]);
+
+  // Clamp in case the list shrank (e.g. bills deleted) while on a later page
+  const pageCount = Math.max(1, Math.ceil(products.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pagedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    // Bring the top of the table back into view when paging from the bottom controls
+    tableRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
+
   const scopeSpent = scope.reduce((s, p) => s + p.totalSpent, 0);
   const scopePurchases = scope.reduce((s, p) => s + p.history.length, 0);
   const scopeIncreased = scope.filter(p => p.status === 'INCREASED').length;
@@ -104,7 +154,7 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
       <button
         key={key}
         type="button"
-        onClick={() => setSelected(key)}
+        onClick={() => onSelectCategory(key === ALL ? null : key)}
         aria-pressed={isActive}
         className={`category-browser__category ${isActive ? 'is-active' : ''} shrink-0 lg:w-full text-left px-3 py-2.5 rounded-xl border transition-all ${
           isActive
@@ -125,8 +175,13 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
 
   return (
     <div className="category-browser space-y-6">
-      {/* Header */}
-      <div className="category-browser__header">
+      {/* Header: stays pinned below the app's top bar (or the window top on desktop) while scrolling */}
+      <div
+        ref={headerRef}
+        className={`category-browser__header ${isHeaderStuck ? 'is-stuck' : ''} sticky top-(--app-header-h,0px) z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 -mt-3 bg-slate-950/95 backdrop-blur-md border-b transition-[border-color,box-shadow] ${
+          isHeaderStuck ? 'border-slate-800 shadow-lg shadow-slate-950/50' : 'border-transparent'
+        }`}
+      >
         <h2 className="category-browser__title text-xl font-bold text-white flex items-center gap-2">
           <Tags className="w-5 h-5 text-amber-400" />
           <span>Sản phẩm đã mua theo danh mục</span>
@@ -143,7 +198,10 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
       ) : (
         <div className="category-browser__layout grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-6 items-start">
           {/* Category list: horizontal scroll on small screens, sidebar on large */}
-          <nav className="category-browser__categories lg:sticky lg:top-24" aria-label="Danh mục sản phẩm">
+          <nav
+            className="category-browser__categories lg:sticky lg:top-[calc(var(--app-header-h,0px)+var(--category-header-h,0px)+1rem)]"
+            aria-label="Danh mục sản phẩm"
+          >
             <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
               {categoryButton(ALL, 'Tất cả danh mục', priceTrends.length, allSpent)}
               {categories.map(c => categoryButton(c.name, c.name, c.products.length, c.totalSpent))}
@@ -208,7 +266,8 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
                 <p className="text-sm text-slate-400">Không có sản phẩm nào phù hợp với từ khóa.</p>
               </div>
             ) : (
-              <div className="category-browser__table-scroll overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
+              <>
+              <div ref={tableRef} className="category-browser__table-scroll overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
                 <table className="category-browser__table w-full text-left text-sm">
                   <thead className="bg-slate-950 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-800">
                     <tr>
@@ -221,7 +280,7 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">
-                    {products.map(p => (
+                    {pagedProducts.map(p => (
                       <tr key={p.canonicalName} className={`category-browser__row category-browser__row--${p.status.toLowerCase()} hover:bg-slate-800/30 transition-colors`}>
                         <td className="category-browser__cell category-browser__cell--name py-3 px-4 min-w-[220px]">
                           <button
@@ -266,6 +325,19 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({ priceT
                   </tbody>
                 </table>
               </div>
+
+              {products.length > DEFAULT_PAGE_SIZE && (
+                <Pagination
+                  className="category-browser__pagination"
+                  page={currentPage}
+                  pageSize={pageSize}
+                  totalItems={products.length}
+                  onPageChange={goToPage}
+                  onPageSizeChange={setPageSize}
+                  itemLabel="sản phẩm"
+                />
+              )}
+              </>
             )}
           </section>
         </div>
