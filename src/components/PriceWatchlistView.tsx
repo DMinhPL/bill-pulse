@@ -1,19 +1,18 @@
-import React, { useState, useMemo } from 'react';
 import {
-  TrendingUp,
-  TrendingDown,
-  Search,
-  Filter,
   ArrowUpDown,
-  Store,
-  Calendar,
+  BarChart3,
   ChevronRight,
+  Filter,
   Minus,
+  Search,
   Sparkles,
-  BarChart3
+  Store,
+  TrendingDown,
+  TrendingUp
 } from 'lucide-react';
-import { PriceTrendSummary, PriceTrendStatus } from '../types/bill';
-import { formatVND, formatPercent } from '../utils/currency';
+import React, { useMemo, useState } from 'react';
+import { PriceTrendStatus, PriceTrendSummary } from '../types/bill';
+import { formatPercent, formatVND } from '../utils/currency';
 import { CategoryChangeChart, computeCategoryChanges } from './charts/CategoryChangeChart';
 import { chartTheme } from './charts/chartSetup';
 
@@ -108,43 +107,43 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
     activeClass: string;
     inactiveClass: string;
   }[] = [
-    {
-      value: 'ALL',
-      modifier: 'all',
-      label: 'Tất cả',
-      count: priceTrends.length,
-      Icon: null,
-      activeClass: 'bg-slate-200 text-slate-950 border-slate-200 shadow',
-      inactiveClass: neutralInactive,
-    },
-    {
-      value: 'INCREASED',
-      modifier: 'increased',
-      label: 'Đang tăng giá',
-      count: countIncreased,
-      Icon: TrendingUp,
-      activeClass: 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-950',
-      inactiveClass: 'bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20',
-    },
-    {
-      value: 'DECREASED',
-      modifier: 'decreased',
-      label: 'Hạ nhiệt / Giảm',
-      count: countDecreased,
-      Icon: TrendingDown,
-      activeClass: 'bg-emerald-500 text-slate-950 border-emerald-500 shadow-md shadow-emerald-950',
-      inactiveClass: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20',
-    },
-    {
-      value: 'UNCHANGED',
-      modifier: 'unchanged',
-      label: 'Ổn định',
-      count: countUnchanged,
-      Icon: Minus,
-      activeClass: 'bg-slate-600 text-white border-slate-500 shadow',
-      inactiveClass: neutralInactive,
-    },
-  ];
+      {
+        value: 'ALL',
+        modifier: 'all',
+        label: 'Tất cả',
+        count: priceTrends.length,
+        Icon: null,
+        activeClass: 'bg-slate-200 text-slate-950 border-slate-200 shadow',
+        inactiveClass: neutralInactive,
+      },
+      {
+        value: 'INCREASED',
+        modifier: 'increased',
+        label: 'Đang tăng giá',
+        count: countIncreased,
+        Icon: TrendingUp,
+        activeClass: 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-950',
+        inactiveClass: 'bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20',
+      },
+      {
+        value: 'DECREASED',
+        modifier: 'decreased',
+        label: 'Hạ nhiệt / Giảm',
+        count: countDecreased,
+        Icon: TrendingDown,
+        activeClass: 'bg-emerald-500 text-slate-950 border-emerald-500 shadow-md shadow-emerald-950',
+        inactiveClass: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20',
+      },
+      {
+        value: 'UNCHANGED',
+        modifier: 'unchanged',
+        label: 'Ổn định',
+        count: countUnchanged,
+        Icon: Minus,
+        activeClass: 'bg-slate-600 text-white border-slate-500 shadow',
+        inactiveClass: neutralInactive,
+      },
+    ];
 
   return (
     <div className="price-watchlist space-y-6">
@@ -210,11 +209,9 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
                 type="button"
                 onClick={() => setStatusFilter(value)}
                 aria-pressed={isActive}
-                className={`price-watchlist__status-filter price-watchlist__status-filter--${modifier} ${
-                  isActive ? 'is-active' : ''
-                } inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all ${
-                  isActive ? activeClass : inactiveClass
-                }`}
+                className={`price-watchlist__status-filter price-watchlist__status-filter--${modifier} ${isActive ? 'is-active' : ''
+                  } inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl border text-xs font-semibold whitespace-nowrap transition-all ${isActive ? activeClass : inactiveClass
+                  }`}
               >
                 {Icon && <Icon className="price-watchlist__status-filter-icon w-3.5 h-3.5 shrink-0" />}
                 <span className="price-watchlist__status-filter-label">{label}</span>
@@ -402,9 +399,8 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
                       </div>
                       <div className="price-card__range-track relative w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
-                          className={`price-card__range-fill h-full rounded-full ${
-                            item.status === 'INCREASED' ? 'bg-rose-500' : 'bg-emerald-400'
-                          }`}
+                          className={`price-card__range-fill h-full rounded-full ${item.status === 'INCREASED' ? 'bg-rose-500' : 'bg-emerald-400'
+                            }`}
                           style={{ width: `${Math.max(10, currentPositionPct)}%` }}
                         />
                       </div>

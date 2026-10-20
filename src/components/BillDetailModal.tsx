@@ -1,19 +1,15 @@
-import React from 'react';
 import {
-  X,
-  Store,
-  Calendar,
-  CreditCard,
   Receipt,
-  TrendingUp,
+  Store,
   TrendingDown,
-  FileText,
-  FileCheck
+  TrendingUp,
+  X
 } from 'lucide-react';
+import React from 'react';
 import { Bill } from '../types/bill';
-import { formatVND, formatPercent } from '../utils/currency';
-import { enrichBillItemsWithTrends } from '../utils/priceTracker';
+import { formatPercent, formatVND } from '../utils/currency';
 import { formatDateLong } from '../utils/date';
+import { enrichBillItemsWithTrends } from '../utils/priceTracker';
 
 interface BillDetailModalProps {
   bill: Bill | null;

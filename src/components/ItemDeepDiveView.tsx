@@ -1,18 +1,13 @@
-import React from 'react';
 import {
-  LineChart,
-  TrendingUp,
-  TrendingDown,
-  Store,
   Calendar,
-  DollarSign,
-  Package,
-  Layers,
-  ArrowRight,
-  Info
+  LineChart,
+  Store,
+  TrendingDown,
+  TrendingUp
 } from 'lucide-react';
+import React from 'react';
 import { PriceTrendSummary } from '../types/bill';
-import { formatVND, formatPercent } from '../utils/currency';
+import { formatPercent, formatVND } from '../utils/currency';
 import { PriceHistoryChart } from './charts/PriceHistoryChart';
 
 interface ItemDeepDiveViewProps {
