@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   LineChart,
   TrendingUp,
@@ -45,10 +45,9 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  const firstPoint = timeline[0];
-  const lastPoint = timeline[timeline.length - 1];
-  const overallDiff = lastPoint.unitPrice - firstPoint.unitPrice;
-  const overallPct = firstPoint.unitPrice > 0 ? (overallDiff / firstPoint.unitPrice) * 100 : 0;
+  // Keep the headline trend consistent with the watchlist: latest purchase vs.
+  // the immediately previous purchase. The full history remains visible below.
+  const latestTrendModifier = currentItem.status.toLowerCase();
 
   return (
     <div className="item-deep-dive space-y-6">
@@ -81,7 +80,7 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
       </div>
 
       {/* Item Overview Hero Card */}
-      <div className={`item-overview item-overview--${overallDiff > 0 ? 'increased' : overallDiff < 0 ? 'decreased' : 'unchanged'} bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden`}>
+      <div className={`item-overview item-overview--${latestTrendModifier} bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden`}>
         <div className="item-overview__main flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="item-overview__info space-y-1">
             <div className="item-overview__tags flex items-center gap-2">
@@ -112,19 +111,21 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
             </div>
 
             <div className="item-overview__overall-change border-l border-slate-800 pl-6">
-              <span className="item-overview__label text-xs text-slate-400 block">Biến động từ lần đầu</span>
-              {overallDiff > 0 ? (
+              <span className="item-overview__label text-xs text-slate-400 block">Biến động so với lần trước</span>
+              {currentItem.status === 'INCREASED' ? (
                 <div className="item-overview__change item-overview__change--increased flex items-center gap-1 text-rose-400 font-bold text-base">
                   <TrendingUp className="w-4 h-4" />
-                  <span>+{formatVND(overallDiff, { showSign: false })}</span>
-                  <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(overallPct)})</span>
+                  <span>+{formatVND(currentItem.priceDiff, { showSign: false })}</span>
+                  <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(currentItem.percentChange)})</span>
                 </div>
-              ) : overallDiff < 0 ? (
+              ) : currentItem.status === 'DECREASED' ? (
                 <div className="item-overview__change item-overview__change--decreased flex items-center gap-1 text-emerald-400 font-bold text-base">
                   <TrendingDown className="w-4 h-4" />
-                  <span>{formatVND(overallDiff, { showSign: true })}</span>
-                  <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(overallPct)})</span>
+                  <span>{formatVND(currentItem.priceDiff, { showSign: true })}</span>
+                  <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(currentItem.percentChange)})</span>
                 </div>
+              ) : currentItem.status === 'NEW' ? (
+                <span className="item-overview__change item-overview__change--new text-blue-300 font-bold text-base">Lần đầu mua</span>
               ) : (
                 <span className="item-overview__change item-overview__change--unchanged text-slate-300 font-bold text-base">Không đổi (0%)</span>
               )}

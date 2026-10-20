@@ -31,6 +31,7 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | PriceTrendStatus>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  const [storeFilter, setStoreFilter] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'INCREASE_PCT' | 'INCREASE_DIFF' | 'CURRENT_PRICE' | 'NAME'>('INCREASE_PCT');
 
   // Extract unique categories
@@ -42,6 +43,15 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
     return Array.from(set);
   }, [priceTrends]);
 
+  // Store reflects where each product was purchased most recently.
+  const stores = useMemo(() => {
+    const set = new Set<string>();
+    priceTrends.forEach(t => {
+      if (t.lastStore) set.add(t.lastStore);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'vi'));
+  }, [priceTrends]);
+
   // Filter and sort items
   const filteredItems = useMemo(() => {
     return priceTrends
@@ -50,6 +60,8 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
         if (statusFilter !== 'ALL' && item.status !== statusFilter) return false;
         // Category filter
         if (categoryFilter !== 'ALL' && item.category !== categoryFilter) return false;
+        // Latest purchase store filter
+        if (storeFilter !== 'ALL' && item.lastStore !== storeFilter) return false;
         // Search query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
@@ -76,7 +88,7 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
         }
         return 0;
       });
-  }, [priceTrends, searchQuery, statusFilter, categoryFilter, sortBy]);
+  }, [priceTrends, searchQuery, statusFilter, categoryFilter, storeFilter, sortBy]);
 
   const countIncreased = priceTrends.filter(t => t.status === 'INCREASED').length;
   const countDecreased = priceTrends.filter(t => t.status === 'DECREASED').length;
@@ -211,22 +223,43 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
             );
           })}
 
-          {/* Category Filter dropdown */}
-          {categories.length > 0 && (
-            <div className="price-watchlist__category-filter ml-auto flex items-center gap-2">
-              <Filter className="w-3.5 h-3.5 text-slate-500" />
-              <select
-                value={categoryFilter}
-                onChange={e => setCategoryFilter(e.target.value)}
-                className="price-watchlist__category-select h-9 bg-slate-950 text-xs text-slate-300 px-3 rounded-xl border border-slate-800 focus:outline-none focus:border-rose-500/50"
-              >
-                <option value="ALL">Mọi danh mục</option>
-                {categories.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="price-watchlist__dropdown-filters ml-auto flex flex-wrap items-center gap-2">
+            {/* Store Filter dropdown */}
+            {stores.length > 0 && (
+              <div className="price-watchlist__store-filter flex items-center gap-2">
+                <Store className="w-3.5 h-3.5 text-slate-500" />
+                <select
+                  aria-label="Lọc theo cửa hàng mua gần nhất"
+                  value={storeFilter}
+                  onChange={e => setStoreFilter(e.target.value)}
+                  className="price-watchlist__store-select h-9 max-w-56 bg-slate-950 text-xs text-slate-300 px-3 rounded-xl border border-slate-800 focus:outline-none focus:border-rose-500/50"
+                >
+                  <option value="ALL">Mọi cửa hàng</option>
+                  {stores.map(store => (
+                    <option key={store} value={store}>{store}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Category Filter dropdown */}
+            {categories.length > 0 && (
+              <div className="price-watchlist__category-filter flex items-center gap-2">
+                <Filter className="w-3.5 h-3.5 text-slate-500" />
+                <select
+                  aria-label="Lọc theo danh mục"
+                  value={categoryFilter}
+                  onChange={e => setCategoryFilter(e.target.value)}
+                  className="price-watchlist__category-select h-9 bg-slate-950 text-xs text-slate-300 px-3 rounded-xl border border-slate-800 focus:outline-none focus:border-rose-500/50"
+                >
+                  <option value="ALL">Mọi danh mục</option>
+                  {categories.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

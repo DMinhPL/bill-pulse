@@ -105,7 +105,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
               <table className="bill-detail__table w-full text-left text-xs sm:text-sm">
                 <thead className="bill-detail__table-head bg-slate-950 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
                   <tr>
-                    <th className="bill-detail__col bill-detail__col--name py-2.5 px-3">Tên sản phẩm</th>
+                    <th className="bill-detail__col bill-detail__col--name py-2.5 px-3 w-2xs">Tên sản phẩm</th>
                     <th className="bill-detail__col bill-detail__col--quantity py-2.5 px-2 text-center">SL</th>
                     <th className="bill-detail__col bill-detail__col--unit-price py-2.5 px-3 text-right">Đơn giá</th>
                     <th className="bill-detail__col bill-detail__col--trend py-2.5 px-3 text-center">So với trước</th>
@@ -114,7 +114,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                 </thead>
                 <tbody className="bill-detail__table-body divide-y divide-slate-800/80">
                   {enrichedItems.map((item, idx) => (
-                    <tr key={idx} className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} hover:bg-slate-800/30`}>
+                    <tr key={`${item.canonicalName}-${idx.toString()}`} className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} hover:bg-slate-800/30`}>
                       <td className="bill-detail__cell bill-detail__cell--name py-2.5 px-3">
                         <div className="bill-detail__item-name font-medium text-slate-200">{item.canonicalName}</div>
                         <div className="bill-detail__item-unit text-[10px] text-slate-400">ĐVT: {item.unit}</div>
