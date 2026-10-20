@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import { promisify } from 'util';
 import express, { Request, Response, NextFunction } from 'express';
 import pg from 'pg';
-import { pool, withTransaction } from './db';
-import { insertSampleBills } from './bills';
+import { pool, withTransaction } from './db.js';
+import { insertSampleBills } from './bills.js';
 
 const scrypt = promisify(crypto.scrypt) as (password: string, salt: string, keylen: number) => Promise<Buffer>;
 

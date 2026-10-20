@@ -1,4 +1,4 @@
-import { Bill } from '../types/bill';
+import { Bill } from '../types/bill.js';
 
 export const INITIAL_SAMPLE_BILLS: Bill[] = [
   {

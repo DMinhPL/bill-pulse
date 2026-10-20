@@ -1,13 +1,13 @@
 import express, { type ErrorRequestHandler } from 'express';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
-import { authRouter, requireAuth } from './auth';
-import { billsRouter } from './bills';
+import { authRouter, requireAuth } from './auth.js';
+import { billsRouter } from './bills.js';
 import {
   MAX_BILL_FILE_SIZE_BYTES,
   MAX_BILL_FILE_SIZE_LABEL,
   isAllowedBillMimeType,
-} from '../shared/billUpload';
+} from '../shared/billUpload.js';
 
 dotenv.config();
 

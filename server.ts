@@ -25,7 +25,7 @@ const NOT_FOUND_PAGE = `<!doctype html>
   </body>
 </html>`;
 
-// Local Node entry point. Vercel imports server/app.ts through api/[...path].ts
+// Local Node entry point. Vercel imports server/app.ts through api/index.ts
 // instead, so no listener or static-file middleware runs inside the Function.
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
