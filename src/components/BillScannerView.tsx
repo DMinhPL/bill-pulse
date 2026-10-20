@@ -25,6 +25,11 @@ import { formatVND, formatPercent } from '../utils/currency';
 import { enrichBillItemsWithTrends } from '../utils/priceTracker';
 import { QUICK_DEMO_BILLS, SampleQuickBill } from '../data/sampleBills';
 import { trackedFetch } from '../utils/api';
+import {
+  MAX_BILL_FILE_SIZE_BYTES,
+  MAX_BILL_FILE_SIZE_LABEL,
+  isAllowedBillMimeType,
+} from '../../shared/billUpload';
 
 interface BillScannerViewProps {
   existingBills: Bill[];
@@ -78,16 +83,35 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
 
   const handleFileSelect = async (selectedFile: File) => {
     setScanError(null);
-    setFile(selectedFile);
 
-    const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.endsWith('.pdf');
+    const isPdf =
+      selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
+    const mimeType = isPdf ? 'application/pdf' : selectedFile.type.toLowerCase();
+
+    if (!isAllowedBillMimeType(mimeType)) {
+      setFile(null);
+      setFilePreview(null);
+      setScanError('Định dạng tệp không được hỗ trợ. Vui lòng chọn ảnh PNG, JPG, WEBP hoặc tệp PDF.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (selectedFile.size > MAX_BILL_FILE_SIZE_BYTES) {
+      setFile(null);
+      setFilePreview(null);
+      setScanError(`Tệp vượt quá giới hạn ${MAX_BILL_FILE_SIZE_LABEL}. Vui lòng chọn tệp nhỏ hơn.`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setFile(selectedFile);
     setFileType(isPdf ? 'pdf' : 'image');
 
     try {
       const b64 = await fileToBase64(selectedFile);
       setFilePreview(b64);
       // Auto-trigger scan
-      processBillScan(selectedFile, b64, isPdf ? 'application/pdf' : selectedFile.type || 'image/jpeg');
+      processBillScan(selectedFile, b64, mimeType);
     } catch (err) {
       setScanError('Không thể đọc file. Vui lòng thử lại với ảnh hoặc PDF khác.');
     }
@@ -352,7 +376,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,application/pdf"
+              accept="image/png,image/jpeg,image/webp,application/pdf,.png,.jpg,.jpeg,.webp,.pdf"
               className="hidden"
               onChange={e => e.target.files && handleFileSelect(e.target.files[0])}
             />
@@ -383,7 +407,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
                     Kéo thả ảnh chụp hóa đơn hoặc tệp PDF vào đây
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Hỗ trợ tệp ảnh (PNG, JPG, WEBP) hoặc tài liệu PDF (hóa đơn VAT điện tử, WinMart, Bách Hóa Xanh, Co.opmart...)
+                    Hỗ trợ PNG, JPG, WEBP hoặc PDF, dung lượng tối đa {MAX_BILL_FILE_SIZE_LABEL}.
                   </p>
                 </div>
                 <button
