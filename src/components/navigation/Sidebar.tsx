@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Điều hướng chính"
     >
       <div className="sidebar__header px-5 h-16 flex items-center border-b border-slate-800">
-        <Brand />
+        <Brand className="shrink-0" />
       </div>
 
       {/* Pages */}

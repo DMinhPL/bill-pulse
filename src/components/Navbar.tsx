@@ -49,12 +49,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header ref={headerRef} className={`navbar sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-xl ${className}`}>
-      <div className="navbar__inner px-4 sm:px-6">
-        <div className="navbar__bar flex items-center justify-between gap-3 h-16">
-          <Brand withTagline className="navbar__brand min-w-0" />
+      <div className="navbar__inner px-3 sm:px-6">
+        <div className="navbar__bar flex items-center justify-between gap-2 sm:gap-3 h-14 sm:h-16">
+          <Brand withTagline className="navbar__brand" />
 
           {/* Action buttons */}
-          <div className="navbar__actions flex items-center gap-1 shrink-0">
+          <div className="navbar__actions flex items-center gap-0.5 sm:gap-1 shrink-0">
             <button
               onClick={onOpenAIInsights}
               className="navbar__action navbar__action--ai flex items-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg text-xs font-medium whitespace-nowrap bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-200 border border-purple-500/30 hover:bg-purple-500/30 transition-all shadow-sm"
@@ -73,12 +73,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Download className="w-4 h-4" />
             </button>
 
-            <div className="navbar__divider w-px h-6 bg-slate-800 mx-1" />
+            <div className="navbar__divider hidden sm:block w-px h-6 bg-slate-800 mx-1" />
 
-            {/* Signed-in user */}
+            {/* Signed-in user (display only, so it gives way first on narrow phones) */}
             <div
-              className="navbar__avatar w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-semibold text-slate-200 shrink-0"
+              className="navbar__avatar hidden sm:flex w-8 h-8 rounded-full bg-slate-800 border border-slate-700 items-center justify-center text-xs font-semibold text-slate-200 shrink-0"
               title={userName}
+              aria-label={userName}
             >
               {userName.trim().charAt(0).toUpperCase() || '?'}
             </div>

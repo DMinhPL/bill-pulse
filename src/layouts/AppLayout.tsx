@@ -93,7 +93,7 @@ export const AppLayout: React.FC = () => {
 
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl font-semibold text-xs sm:text-sm flex items-center gap-2 ${toast.tone === 'success' ? 'bg-emerald-500 text-slate-950 animate-bounce' : 'bg-rose-500 text-white'
+          className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 px-4 py-3 rounded-2xl shadow-xl font-semibold text-xs sm:text-sm flex items-center gap-2 ${toast.tone === 'success' ? 'bg-emerald-500 text-slate-950 animate-bounce' : 'bg-rose-500 text-white'
             }`}
         >
           {toast.tone === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
