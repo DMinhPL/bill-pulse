@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Upload,
+  Camera,
   ScanLine,
   FileText,
   Image as ImageIcon,
@@ -25,6 +26,7 @@ import { formatVND, formatPercent } from '../utils/currency';
 import { enrichBillItemsWithTrends } from '../utils/priceTracker';
 import { QUICK_DEMO_BILLS, SampleQuickBill } from '../data/sampleBills';
 import { trackedFetch } from '../utils/api';
+import { prepareBillImage } from '../utils/image';
 import {
   MAX_BILL_FILE_SIZE_BYTES,
   MAX_BILL_FILE_SIZE_LABEL,
@@ -46,6 +48,8 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<'image' | 'pdf'>('image');
+  const [fileMime, setFileMime] = useState<string | null>(null);
+  const [isPreparing, setIsPreparing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [scanStep, setScanStep] = useState<string>('');
@@ -70,6 +74,26 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // `capture` is ignored on desktop (it just opens the file picker), so only
+  // offer the camera button on touch devices
+  const canUseCamera = useMemo(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches,
+    []
+  );
+
+  const resetFileInputs = () => {
+    // Allow re-selecting the same file / retaking right after a rejection
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+  };
+
+  const clearSelection = () => {
+    setFile(null);
+    setFilePreview(null);
+    setFileMime(null);
+  };
 
   // Convert File to Base64
   const fileToBase64 = (file: File): Promise<string> => {
@@ -81,39 +105,55 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
     });
   };
 
+  // Validate, shrink photos, and stage the file for review. Scanning starts only
+  // once the user confirms the preview, so blurry camera shots can be retaken
+  // without spending a Gemini call.
   const handleFileSelect = async (selectedFile: File) => {
     setScanError(null);
+    resetFileInputs();
+    clearSelection();
 
     const isPdf =
       selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
-    const mimeType = isPdf ? 'application/pdf' : selectedFile.type.toLowerCase();
 
-    if (!isAllowedBillMimeType(mimeType)) {
-      setFile(null);
-      setFilePreview(null);
-      setScanError('Định dạng tệp không được hỗ trợ. Vui lòng chọn ảnh PNG, JPG, WEBP hoặc tệp PDF.');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
-    if (selectedFile.size > MAX_BILL_FILE_SIZE_BYTES) {
-      setFile(null);
-      setFilePreview(null);
-      setScanError(`Tệp vượt quá giới hạn ${MAX_BILL_FILE_SIZE_LABEL}. Vui lòng chọn tệp nhỏ hơn.`);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
-    setFile(selectedFile);
-    setFileType(isPdf ? 'pdf' : 'image');
-
+    setIsPreparing(true);
     try {
-      const b64 = await fileToBase64(selectedFile);
+      let prepared = selectedFile;
+      if (!isPdf) {
+        try {
+          prepared = await prepareBillImage(selectedFile);
+        } catch {
+          setScanError('Không đọc được ảnh này. Vui lòng chọn ảnh PNG, JPG, WEBP hoặc tệp PDF.');
+          return;
+        }
+      }
+
+      const mimeType = isPdf ? 'application/pdf' : prepared.type.toLowerCase();
+      if (!isAllowedBillMimeType(mimeType)) {
+        setScanError('Định dạng tệp không được hỗ trợ. Vui lòng chọn ảnh PNG, JPG, WEBP hoặc tệp PDF.');
+        return;
+      }
+
+      if (prepared.size > MAX_BILL_FILE_SIZE_BYTES) {
+        setScanError(`Tệp vượt quá giới hạn ${MAX_BILL_FILE_SIZE_LABEL}. Vui lòng chọn tệp nhỏ hơn.`);
+        return;
+      }
+
+      const b64 = await fileToBase64(prepared);
+      setFile(prepared);
+      setFileType(isPdf ? 'pdf' : 'image');
+      setFileMime(mimeType);
       setFilePreview(b64);
-      // Auto-trigger scan
-      processBillScan(selectedFile, b64, mimeType);
     } catch (err) {
       setScanError('Không thể đọc file. Vui lòng thử lại với ảnh hoặc PDF khác.');
+    } finally {
+      setIsPreparing(false);
+    }
+  };
+
+  const startScan = () => {
+    if (file && filePreview && fileMime) {
+      processBillScan(file, filePreview, fileMime);
     }
   };
 
@@ -192,8 +232,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
 
   // Quick Pick Demo Bill
   const loadQuickDemo = (demo: SampleQuickBill) => {
-    setFile(null);
-    setFilePreview(null);
+    clearSelection();
     setScanError(null);
 
     // Enrich demo items with existing bills
@@ -342,8 +381,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
     if (!saved) return;
 
     setStagedBill(null);
-    setFile(null);
-    setFilePreview(null);
+    clearSelection();
     onNavigateTab('watchlist');
   };
 
@@ -362,26 +400,107 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
 
       {!stagedBill && (
         <>
-          {/* Upload Dropzone */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.pdf"
+            className="hidden"
+            onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+          />
+          {/* Hands off to the OS camera app: no getUserMedia permission is requested by
+              the page. Browsers that ignore `capture` (e.g. Zalo/Facebook in-app
+              browsers) fall back to the gallery, which flows through the same handler. */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+          />
+
+          {/* Review captured / selected file before spending a scan */}
+          {file && filePreview && !isScanning ? (
+            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-semibold text-white text-sm">Kiểm tra hóa đơn trước khi quét</h3>
+                <span className="text-xs text-slate-400 truncate">{file.name}</span>
+              </div>
+
+              {fileType === 'image' ? (
+                <img
+                  src={filePreview}
+                  alt="Ảnh hóa đơn đã chọn"
+                  className="w-full max-h-[60vh] object-contain rounded-xl bg-slate-950 border border-slate-800"
+                />
+              ) : (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
+                  <FileText className="w-8 h-8 text-emerald-400 shrink-0" />
+                  <span className="text-sm text-slate-200 truncate">{file.name}</span>
+                </div>
+              )}
+
+              {fileType === 'image' && (
+                <p className="text-xs text-slate-400">
+                  Đảm bảo ảnh rõ nét, đủ sáng và thấy toàn bộ danh sách món hàng cùng tổng tiền.
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={startScan}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-md flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {scanError ? 'Thử quét lại' : 'Quét hóa đơn'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    canUseCamera && fileType === 'image'
+                      ? cameraInputRef.current?.click()
+                      : fileInputRef.current?.click()
+                  }
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center gap-2 transition-colors"
+                >
+                  {canUseCamera && fileType === 'image' ? (
+                    <Camera className="w-4 h-4" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {canUseCamera && fileType === 'image' ? 'Chụp lại' : 'Chọn tệp khác'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearSelection();
+                    setScanError(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          ) : (
+          /* Upload Dropzone */
           <div
             onDragOver={e => e.preventDefault()}
             onDrop={onDropHandler}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
-              isScanning
+            onClick={() => !isScanning && !isPreparing && fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all ${
+              isScanning || isPreparing
                 ? 'border-emerald-500/60 bg-emerald-950/20'
-                : 'border-slate-700 bg-slate-900/60 hover:border-emerald-500/50 hover:bg-slate-900'
+                : 'cursor-pointer border-slate-700 bg-slate-900/60 hover:border-emerald-500/50 hover:bg-slate-900'
             }`}
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp,application/pdf,.png,.jpg,.jpeg,.webp,.pdf"
-              className="hidden"
-              onChange={e => e.target.files && handleFileSelect(e.target.files[0])}
-            />
-
-            {isScanning ? (
+            {isPreparing ? (
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                <p className="text-sm text-slate-300">Đang tối ưu ảnh hóa đơn...</p>
+              </div>
+            ) : isScanning ? (
               <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 animate-pulse">
@@ -410,15 +529,35 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
                     Hỗ trợ PNG, JPG, WEBP hoặc PDF, dung lượng tối đa {MAX_BILL_FILE_SIZE_LABEL}.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className="mt-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition-colors shadow-md"
-                >
-                  Chọn tệp từ máy tính / điện thoại
-                </button>
+                <div className="mt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                  {canUseCamera && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation(); // don't also trigger the dropzone's file picker
+                        cameraInputRef.current?.click();
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition-colors shadow-md flex items-center gap-1.5"
+                    >
+                      <Camera className="w-4 h-4" />
+                      Chụp hóa đơn bằng camera
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors shadow-md ${
+                      canUseCamera
+                        ? 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                        : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950'
+                    }`}
+                  >
+                    Chọn tệp từ máy tính / điện thoại
+                  </button>
+                </div>
               </div>
             )}
           </div>
+          )}
 
           {/* Scan Error Notice */}
           {scanError && (
@@ -434,6 +573,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
           )}
 
           {/* Quick Pick Sample Bills */}
+          {!file && (
           <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
@@ -475,6 +615,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
               ))}
             </div>
           </div>
+          )}
         </>
       )}
 
@@ -502,8 +643,7 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
               <button
                 onClick={() => {
                   setStagedBill(null);
-                  setFile(null);
-                  setFilePreview(null);
+                  clearSelection();
                 }}
                 disabled={isSaving}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
