@@ -11,6 +11,7 @@ import { formatPercent, formatVND } from '../../../shared/currency';
 import { formatDateLong } from '../../../shared/date';
 import { enrichBillItemsWithTrends } from '../../../shared/priceTracker';
 import { useTablePagination } from '../hooks/useTablePagination';
+import { TOUCH_ROW_HIGHLIGHT_CLASS, useTouchRowHighlight } from '../hooks/useTouchRowHighlight';
 import { Pagination } from './Pagination';
 
 interface BillDetailModalProps {
@@ -25,6 +26,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
   onClose,
 }) => {
   const pagination = useTablePagination(bill?.items.length ?? 0, bill?.id);
+  const { getTouchRowProps, isRowHighlighted } = useTouchRowHighlight(bill?.id);
 
   if (!bill) return null;
 
@@ -116,8 +118,13 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                 <tbody className="bill-detail__table-body divide-y divide-slate-800/80">
                   {pagedItems.map((item, pageIndex) => {
                     const idx = pagination.startIndex + pageIndex;
+                    const rowId = `${item.canonicalName}-${idx.toString()}`;
                     return (
-                      <tr key={`${item.canonicalName}-${idx.toString()}`} className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} hover:bg-slate-800/30`}>
+                      <tr
+                        key={rowId}
+                        {...getTouchRowProps(rowId)}
+                        className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} transition-colors ${isRowHighlighted(rowId) ? TOUCH_ROW_HIGHLIGHT_CLASS : 'hover:bg-slate-800/30'}`}
+                      >
                         <td className="bill-detail__cell bill-detail__cell--name py-2.5 px-3">
                           <div className="bill-detail__item-name font-medium text-slate-200">{item.canonicalName}</div>
                           <div className="bill-detail__item-unit text-[10px] text-slate-400">ĐVT: {item.unit}</div>

@@ -10,6 +10,7 @@ import { PriceTrendSummary } from '../../../shared/types/bill';
 import { formatPercent, formatVND } from '../../../shared/currency';
 import { formatDateShort } from '../../../shared/date';
 import { useTablePagination } from '../hooks/useTablePagination';
+import { TOUCH_ROW_HIGHLIGHT_CLASS, useTouchRowHighlight } from '../hooks/useTouchRowHighlight';
 import { Pagination } from './Pagination';
 import { PriceHistoryChart } from './charts/PriceHistoryChart';
 
@@ -31,6 +32,9 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
     null;
   const pagination = useTablePagination(
     currentItem?.history.length ?? 0,
+    currentItem?.canonicalName
+  );
+  const { getTouchRowProps, isRowHighlighted } = useTouchRowHighlight(
     currentItem?.canonicalName
   );
 
@@ -204,8 +208,13 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
             <tbody className="purchase-log__body divide-y divide-slate-800/80">
               {pagedTimeline.map((point, pageIndex) => {
                 const idx = pagination.startIndex + pageIndex;
+                const rowId = `${point.date}-${point.store}-${idx.toString()}`;
                 return (
-                  <tr key={`${point.date}-${point.store}-${idx}`} className="purchase-log__row hover:bg-slate-800/30 transition-colors">
+                  <tr
+                    key={rowId}
+                    {...getTouchRowProps(rowId)}
+                    className={`purchase-log__row transition-colors ${isRowHighlighted(rowId) ? TOUCH_ROW_HIGHLIGHT_CLASS : 'hover:bg-slate-800/30'}`}
+                  >
                     <td className="purchase-log__cell purchase-log__cell--date py-3 px-4 font-medium text-slate-200 whitespace-nowrap">
                       {formatDateShort(point.date)}
                     </td>

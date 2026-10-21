@@ -3,6 +3,7 @@ import { Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { Bill, BillItemWithTrend } from '../../../../shared/types/bill';
 import { formatVND, formatPercent } from '../../../../shared/currency';
 import { useTablePagination } from '../../hooks/useTablePagination';
+import { TOUCH_ROW_HIGHLIGHT_CLASS, useTouchRowHighlight } from '../../hooks/useTouchRowHighlight';
 import { Pagination } from '../Pagination';
 
 export type BillItemField = 'canonicalName' | 'unit' | 'unitPrice' | 'quantity';
@@ -62,6 +63,7 @@ export const BillItemsTable: React.FC<BillItemsTableProps> = ({
   onAddItem,
 }) => {
   const pagination = useTablePagination(items.length);
+  const { getTouchRowProps, isRowHighlighted } = useTouchRowHighlight(items.length);
 
   // Autocomplete from history: reusing the exact product name is what lets the
   // price comparison match earlier purchases
@@ -106,8 +108,13 @@ export const BillItemsTable: React.FC<BillItemsTableProps> = ({
           <tbody className="divide-y divide-slate-800/80">
             {items.slice(pagination.startIndex, pagination.endIndex).map((item, pageIndex) => {
               const idx = pagination.startIndex + pageIndex;
+              const rowId = item.id || idx.toString();
               return (
-                <tr key={item.id || idx} className="hover:bg-slate-800/40 transition-colors">
+                <tr
+                  key={rowId}
+                  {...getTouchRowProps(rowId)}
+                  className={`transition-colors ${isRowHighlighted(rowId) ? TOUCH_ROW_HIGHLIGHT_CLASS : 'hover:bg-slate-800/40'}`}
+                >
                   <td className="py-3 px-4">
                   <input
                     type="text"

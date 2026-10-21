@@ -16,6 +16,7 @@ import { formatVND, formatPercent } from '../../../shared/currency';
 import { formatDateShort } from '../../../shared/date';
 import { Pagination } from './Pagination';
 import { useHeightVar } from '../hooks/useHeightVar';
+import { TOUCH_ROW_HIGHLIGHT_CLASS, useTouchRowHighlight } from '../hooks/useTouchRowHighlight';
 
 const ALL = 'ALL';
 const DEFAULT_PAGE_SIZE = 10;
@@ -136,6 +137,9 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({
   const pageCount = Math.max(1, Math.ceil(products.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const pagedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const { getTouchRowProps, isRowHighlighted } = useTouchRowHighlight(
+    `${selected}-${query}-${sortBy}-${pageSize}-${currentPage.toString()}`
+  );
 
   const goToPage = (next: number) => {
     setPage(next);
@@ -280,8 +284,14 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">
-                    {pagedProducts.map((p, index) => (
-                      <tr key={`${p.canonicalName}-${p.priceUnit || p.unit}-${index}`} className={`category-browser__row category-browser__row--${p.status.toLowerCase()} hover:bg-slate-800/30 transition-colors`}>
+                    {pagedProducts.map((p, index) => {
+                      const rowId = `${p.canonicalName}-${p.priceUnit || p.unit}-${index.toString()}`;
+                      return (
+                      <tr
+                        key={rowId}
+                        {...getTouchRowProps(rowId)}
+                        className={`category-browser__row category-browser__row--${p.status.toLowerCase()} transition-colors ${isRowHighlighted(rowId) ? TOUCH_ROW_HIGHLIGHT_CLASS : 'hover:bg-slate-800/30'}`}
+                      >
                         <td className="category-browser__cell category-browser__cell--name py-3 px-4 min-w-[220px]">
                           <button
                             type="button"
@@ -321,7 +331,8 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({
                           </span>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
