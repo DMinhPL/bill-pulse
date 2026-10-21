@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import type { ChartData, ChartOptions, Plugin } from 'chart.js';
-import { Bill } from '../../types/bill';
-import { formatVND } from '../../utils/currency';
+import { Bill } from '../../../shared/types/bill';
+import { formatVND } from '../../../shared/currency';
 import { chartTheme, inkFor } from './chartSetup';
 
 const OTHER_LABEL = 'Khác';

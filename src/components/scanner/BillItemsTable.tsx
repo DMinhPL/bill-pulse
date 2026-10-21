@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
-import { Bill, BillItemWithTrend } from '../../types/bill';
-import { formatVND, formatPercent } from '../../utils/currency';
+import { Bill, BillItemWithTrend } from '../../../shared/types/bill';
+import { formatVND, formatPercent } from '../../../shared/currency';
 
 export type BillItemField = 'canonicalName' | 'unit' | 'unitPrice' | 'quantity';
 

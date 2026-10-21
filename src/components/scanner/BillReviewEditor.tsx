@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle2, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
-import { Bill } from '../../types/bill';
-import { formatVND } from '../../utils/currency';
+import { Bill } from '../../../shared/types/bill';
+import { formatVND } from '../../../shared/currency';
 import { StagedBill, getStagedBillError, restageItems, toBillItem, createBlankItem } from './stagedBill';
 import { BillDetailsForm, BillDetailField } from './BillDetailsForm';
 import { BillItemsTable, BillItemField } from './BillItemsTable';

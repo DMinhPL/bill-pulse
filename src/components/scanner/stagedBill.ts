@@ -1,6 +1,6 @@
-import { Bill, BillItem, BillItemWithTrend } from '../../types/bill';
-import { enrichBillItemsWithTrends } from '../../utils/priceTracker';
-import { SampleQuickBill } from '../../data/sampleBills';
+import { Bill, BillItem, BillItemWithTrend } from '../../../shared/types/bill';
+import { enrichBillItemsWithTrends } from '../../../shared/priceTracker';
+import { SampleQuickBill } from '../../../shared/seed/sampleBills';
 
 /** Bill under review before saving: from an AI scan, a demo sample, or typed in by hand */
 export interface StagedBill {

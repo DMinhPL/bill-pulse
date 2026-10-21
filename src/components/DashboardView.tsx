@@ -15,10 +15,10 @@ import {
   History as HistoryIcon,
   PieChart
 } from 'lucide-react';
-import { Bill, PriceTrendSummary } from '../types/bill';
+import { Bill, PriceTrendSummary } from '../../shared/types/bill';
 import { AppTab } from '../types/navigation';
-import { formatVND, formatPercent } from '../utils/currency';
-import { getTopPriceIncreases, getTopPriceDecreases } from '../utils/priceTracker';
+import { formatVND, formatPercent } from '../../shared/currency';
+import { getTopPriceIncreases, getTopPriceDecreases } from '../../shared/priceTracker';
 import { SpendingShareChart, computeSpendingShare, MonthRange, formatMonthKey } from './charts/SpendingShareChart';
 import { MonthRangePicker, MonthRangePreset, rangeForPreset } from './MonthRangePicker';
 

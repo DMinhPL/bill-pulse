@@ -1,9 +1,9 @@
 import express from 'express';
 import pg from 'pg';
 import { pool, withTransaction } from './db.js';
-import { Bill } from '../src/types/bill.js';
-import { INITIAL_SAMPLE_BILLS } from '../src/data/sampleBills.js';
-import { normalizeItemKey } from '../src/utils/priceTracker.js';
+import { Bill } from '../shared/types/bill.js';
+import { INITIAL_SAMPLE_BILLS } from '../shared/seed/sampleBills.js';
+import { normalizeItemKey } from '../shared/priceTracker.js';
 
 const BILL_CATEGORIES: Bill['category'][] = [
   'Supermarket', 'Groceries', 'Dining & Cafe', 'Utilities',

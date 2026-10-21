@@ -1,7 +1,7 @@
 import React from 'react';
 import { Receipt } from 'lucide-react';
-import { QUICK_DEMO_BILLS, SampleQuickBill } from '../../data/sampleBills';
-import { formatVND } from '../../utils/currency';
+import { QUICK_DEMO_BILLS, SampleQuickBill } from '../../../shared/seed/sampleBills';
+import { formatVND } from '../../../shared/currency';
 
 /** Sample bills that skip the upload so the review flow can be tried instantly */
 export const QuickDemoBills: React.FC<{ onPick: (demo: SampleQuickBill) => void }> = ({ onPick }) => (

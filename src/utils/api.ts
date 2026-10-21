@@ -1,4 +1,4 @@
-import { Bill } from '../types/bill';
+import { Bill } from '../../shared/types/bill';
 
 export interface AuthUser {
   id: number;

@@ -6,8 +6,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 import React from 'react';
-import { PriceTrendSummary } from '../types/bill';
-import { formatPercent, formatVND } from '../utils/currency';
+import { PriceTrendSummary } from '../../shared/types/bill';
+import { formatPercent, formatVND } from '../../shared/currency';
 import { PriceHistoryChart } from './charts/PriceHistoryChart';
 
 interface ItemDeepDiveViewProps {

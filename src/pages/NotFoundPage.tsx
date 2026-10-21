@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { usePageTitle } from '../context/AppDataContext';
-import { ROUTES } from '../routes';
+import { ROUTES } from '../../shared/routes';
 
 /** Client-side fallback; the server already answers 404 for unknown URLs. */
 export const NotFoundPage: React.FC = () => {

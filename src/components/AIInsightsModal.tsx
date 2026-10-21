@@ -8,8 +8,8 @@ import {
   AlertTriangle,
   RefreshCw
 } from 'lucide-react';
-import { PriceTrendSummary, InflationAnalysis } from '../types/bill';
-import { formatVND, formatPercent } from '../utils/currency';
+import { PriceTrendSummary, InflationAnalysis } from '../../shared/types/bill';
+import { formatVND, formatPercent } from '../../shared/currency';
 import { trackedFetch } from '../utils/api';
 
 interface AIInsightsModalProps {

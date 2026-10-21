@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { AuthScreen, AuthMode } from '../components/AuthScreen';
 import { FullScreenSpinner } from '../layouts/AppLayout';
-import { ROUTES, safeRedirect } from '../routes';
+import { ROUTES, safeRedirect } from '../../shared/routes';
 
 /** /login and /register. Signed-in users are sent on to where they were going. */
 export const AuthPage: React.FC<{ mode: AuthMode }> = ({ mode }) => {

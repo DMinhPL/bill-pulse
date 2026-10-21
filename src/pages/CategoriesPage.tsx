@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { CategoryBrowserView, categoryOf } from '../components/CategoryBrowserView';
 import { NotFoundState } from './NotFoundState';
-import { ROUTES, categoryPath, findBySlug, itemPath } from '../routes';
+import { ROUTES, categoryPath, findBySlug, itemPath } from '../../shared/routes';
 
 /** /categories (all) and /categories/:categorySlug (one category). */
 export const CategoriesPage: React.FC = () => {

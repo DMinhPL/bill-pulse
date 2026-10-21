@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
-import { ROUTE_PATTERNS } from './routes';
+import { ROUTE_PATTERNS } from '../shared/routes';
 import { AppLayout } from './layouts/AppLayout';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';

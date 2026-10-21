@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Bill } from '../../types/bill';
+import { Bill } from '../../../shared/types/bill';
 import { BILL_CATEGORY_OPTIONS, PAYMENT_METHOD_SUGGESTIONS, StagedBill } from './stagedBill';
 
 export type BillDetailField = 'merchantName' | 'branch' | 'billNumber' | 'time' | 'category' | 'paymentMethod';

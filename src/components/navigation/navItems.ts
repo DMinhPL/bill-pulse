@@ -7,7 +7,7 @@ import {
   AlertTriangle,
   Tags,
 } from 'lucide-react';
-import { ROUTES } from '../../routes';
+import { ROUTES } from '../../../shared/routes';
 
 export interface NavItem {
   /** BEM modifier, e.g. sidebar__link--prices / navbar__link--prices */

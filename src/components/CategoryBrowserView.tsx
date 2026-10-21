@@ -11,9 +11,9 @@ import {
   TrendingDown,
   ChevronRight,
 } from 'lucide-react';
-import { PriceTrendSummary } from '../types/bill';
-import { formatVND, formatPercent } from '../utils/currency';
-import { formatDateShort } from '../utils/date';
+import { PriceTrendSummary } from '../../shared/types/bill';
+import { formatVND, formatPercent } from '../../shared/currency';
+import { formatDateShort } from '../../shared/date';
 import { Pagination } from './Pagination';
 import { useHeightVar } from '../hooks/useHeightVar';
 

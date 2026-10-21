@@ -11,8 +11,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { PriceTrendStatus, PriceTrendSummary } from '../types/bill';
-import { formatPercent, formatVND } from '../utils/currency';
+import { PriceTrendStatus, PriceTrendSummary } from '../../shared/types/bill';
+import { formatPercent, formatVND } from '../../shared/currency';
 import { CategoryChangeChart, computeCategoryChanges } from './charts/CategoryChangeChart';
 import { chartTheme } from './charts/chartSetup';
 

@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { ItemDeepDiveView } from '../components/ItemDeepDiveView';
 import { NotFoundState } from './NotFoundState';
-import { ROUTES, findBySlug, itemPath } from '../routes';
+import { ROUTES, findBySlug, itemPath } from '../../shared/routes';
 
 /** /items/:itemSlug: price history of one product. /items alone opens the first product. */
 export const ItemsPage: React.FC = () => {

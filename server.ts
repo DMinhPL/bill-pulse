@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import app, { GEMINI_MODEL } from './server/app';
-import { PAGE_ROUTE_PATTERNS } from './src/routes';
+import { PAGE_ROUTE_PATTERNS } from './shared/routes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

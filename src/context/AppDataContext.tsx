@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Bill, PriceTrendSummary } from '../types/bill';
-import { computePriceHistoryMap } from '../utils/priceTracker';
+import { Bill, PriceTrendSummary } from '../../shared/types/bill';
+import { computePriceHistoryMap } from '../../shared/priceTracker';
 import { authApi, billsApi, ApiError, AuthUser } from '../utils/api';
 import { useConfirm } from '../components/ConfirmDialog';
 

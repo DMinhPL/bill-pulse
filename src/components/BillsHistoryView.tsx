@@ -13,9 +13,9 @@ import {
   CheckCircle,
   X
 } from 'lucide-react';
-import { Bill } from '../types/bill';
-import { formatVND } from '../utils/currency';
-import { formatDateShort } from '../utils/date';
+import { Bill } from '../../shared/types/bill';
+import { formatVND } from '../../shared/currency';
+import { formatDateShort } from '../../shared/date';
 import { Pagination } from './Pagination';
 
 // Multiples of 6 fill whole rows of the 1-, 2- and 3-column grid

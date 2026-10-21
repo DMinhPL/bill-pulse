@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import type { ChartData, ChartOptions, Plugin } from 'chart.js';
-import { PriceTrendSummary } from '../../types/bill';
-import { formatPercent } from '../../utils/currency';
+import { PriceTrendSummary } from '../../../shared/types/bill';
+import { formatPercent } from '../../../shared/currency';
 import { chartTheme, withAlpha } from './chartSetup';
 
 export interface CategoryChange {

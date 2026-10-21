@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { ROUTES } from '../../routes';
+import { ROUTES } from '../../../shared/routes';
 import logo from '../../assets/images/logo.png';
 
 interface BrandProps {

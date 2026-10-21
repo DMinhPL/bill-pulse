@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { BillScannerView } from '../components/BillScannerView';
-import { pathForTab } from '../routes';
+import { pathForTab } from '../../shared/routes';
 
 export const ScanPage: React.FC = () => {
   const { bills, saveBill } = useAppData();

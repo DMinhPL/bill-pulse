@@ -4,7 +4,7 @@ import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { BillsHistoryView } from '../components/BillsHistoryView';
 import { BillDetailModal } from '../components/BillDetailModal';
 import { NotFoundState } from './NotFoundState';
-import { ROUTES, billPath } from '../routes';
+import { ROUTES, billPath } from '../../shared/routes';
 
 /** /bills (history) and /bills/:billId (history with that bill's detail open). */
 export const BillsPage: React.FC = () => {

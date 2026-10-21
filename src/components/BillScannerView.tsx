@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScanLine } from 'lucide-react';
-import { Bill } from '../types/bill';
+import { Bill } from '../../shared/types/bill';
 import { AppTab } from '../types/navigation';
 import {
   BillAttachment,

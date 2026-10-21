@@ -1,5 +1,6 @@
-import { normalizeItemKey } from './utils/priceTracker';
-import type { AppTab } from './types/navigation';
+import { normalizeItemKey } from './priceTracker';
+
+type AppTab = 'dashboard' | 'scan' | 'watchlist' | 'categories' | 'bills' | 'deepdive';
 
 /** Paths used for links and redirects. */
 export const ROUTES = {

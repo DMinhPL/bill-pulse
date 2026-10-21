@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import type { ChartData, ChartOptions } from 'chart.js';
-import { PricePoint } from '../../types/bill';
-import { formatVND } from '../../utils/currency';
+import { PricePoint } from '../../../shared/types/bill';
+import { formatVND } from '../../../shared/currency';
 import { chartTheme, crosshairPlugin, withAlpha } from './chartSetup';
 
 interface PriceHistoryChartProps {

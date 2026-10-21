@@ -5,7 +5,7 @@ import { useAppData } from '../context/AppDataContext';
 import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { AIInsightsModal } from '../components/AIInsightsModal';
-import { ROUTES } from '../routes';
+import { ROUTES } from '../../shared/routes';
 
 const FullScreenSpinner = () => (
   <div className="min-h-screen bg-slate-950 flex items-center justify-center">

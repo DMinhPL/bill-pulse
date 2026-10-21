@@ -6,10 +6,10 @@ import {
   X
 } from 'lucide-react';
 import React from 'react';
-import { Bill } from '../types/bill';
-import { formatPercent, formatVND } from '../utils/currency';
-import { formatDateLong } from '../utils/date';
-import { enrichBillItemsWithTrends } from '../utils/priceTracker';
+import { Bill } from '../../shared/types/bill';
+import { formatPercent, formatVND } from '../../shared/currency';
+import { formatDateLong } from '../../shared/date';
+import { enrichBillItemsWithTrends } from '../../shared/priceTracker';
 
 interface BillDetailModalProps {
   bill: Bill | null;

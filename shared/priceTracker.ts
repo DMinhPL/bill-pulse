@@ -1,4 +1,4 @@
-import { Bill, BillItem, BillItemWithTrend, PricePoint, PriceTrendStatus, PriceTrendSummary } from '../types/bill.js';
+import { Bill, BillItem, BillItemWithTrend, PricePoint, PriceTrendStatus, PriceTrendSummary } from './types/bill.js';
 
 /**
  * Normalize Vietnamese text for fuzzy matching

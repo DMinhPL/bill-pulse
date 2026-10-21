@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useAppData, usePageTitle } from '../context/AppDataContext';
 import { DashboardView } from '../components/DashboardView';
-import { billPath, itemPath, pathForTab } from '../routes';
+import { billPath, itemPath, pathForTab } from '../../shared/routes';
 
 export const DashboardPage: React.FC = () => {
   const { bills, priceTrends, setAIInsightsOpen } = useAppData();
