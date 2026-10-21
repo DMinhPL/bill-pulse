@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { getPayload } from 'payload';
 
 import config from '../payload.config';
@@ -37,7 +38,10 @@ await upsertGlobal('ai-settings', {
 
 for (const sample of INITIAL_SAMPLE_BILLS) {
   const existing = await payload.find({ collection: 'sample-bills', where: { billNumber: { equals: sample.billNumber } }, limit: 1 });
-  if (!existing.docs[0]) await payload.create({ collection: 'sample-bills', data: sample as never });
+  if (!existing.docs[0]) {
+    const { id: _sampleId, ...sampleData } = sample;
+    await payload.create({ collection: 'sample-bills', data: { ...sampleData, id: crypto.randomUUID() } as never });
+  }
 }
 
 await payload.destroy();
