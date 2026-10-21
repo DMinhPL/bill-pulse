@@ -1,14 +1,17 @@
 'use client'
 
-import { FieldError, useField } from '@payloadcms/ui'
+import { FieldError, useField, useFormFields } from '@payloadcms/ui'
 import type { TextFieldClientComponent } from 'payload'
 import { useState } from 'react'
 
 const InvitationCodeField: TextFieldClientComponent = ({ path }) => {
   const { disabled, setValue, showError, value } = useField<string>({ potentiallyStalePath: path })
+  const consumedBy = useFormFields(([fields]) => fields.consumedBy?.value)
   const [generating, setGenerating] = useState(false)
 
   const handleGenerate = async () => {
+    if (consumedBy) return
+
     setGenerating(true)
     try {
       const response = await fetch('/api/invitation-codes/generate', { method: 'POST', credentials: 'same-origin' })
@@ -28,7 +31,7 @@ const InvitationCodeField: TextFieldClientComponent = ({ path }) => {
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
         <input
           className="field-type__input"
-          disabled={disabled}
+          disabled={disabled || Boolean(consumedBy)}
           id={path}
           maxLength={8}
           onChange={event => setValue(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
@@ -37,7 +40,7 @@ const InvitationCodeField: TextFieldClientComponent = ({ path }) => {
         />
         <button
           className="invitation-code-generate"
-          disabled={disabled || generating}
+          disabled={disabled || generating || Boolean(consumedBy)}
           onClick={() => void handleGenerate()}
           type="button"
         >

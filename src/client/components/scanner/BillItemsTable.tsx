@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { Bill, BillItemWithTrend } from '../../../../shared/types/bill';
 import { formatVND, formatPercent } from '../../../../shared/currency';
+import { useTablePagination } from '../../hooks/useTablePagination';
+import { Pagination } from '../Pagination';
 
 export type BillItemField = 'canonicalName' | 'unit' | 'unitPrice' | 'quantity';
 
@@ -59,6 +61,8 @@ export const BillItemsTable: React.FC<BillItemsTableProps> = ({
   onRemoveItem,
   onAddItem,
 }) => {
+  const pagination = useTablePagination(items.length);
+
   // Autocomplete from history: reusing the exact product name is what lets the
   // price comparison match earlier purchases
   const knownItemNames = useMemo(
@@ -100,9 +104,11 @@ export const BillItemsTable: React.FC<BillItemsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/80">
-            {items.map((item, idx) => (
-              <tr key={item.id || idx} className="hover:bg-slate-800/40 transition-colors">
-                <td className="py-3 px-4">
+            {items.slice(pagination.startIndex, pagination.endIndex).map((item, pageIndex) => {
+              const idx = pagination.startIndex + pageIndex;
+              return (
+                <tr key={item.id || idx} className="hover:bg-slate-800/40 transition-colors">
+                  <td className="py-3 px-4">
                   <input
                     type="text"
                     list="bill-known-items"
@@ -167,11 +173,23 @@ export const BillItemsTable: React.FC<BillItemsTableProps> = ({
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {items.length > pagination.pageSize && (
+        <Pagination
+          className="bill-items__pagination mt-4"
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalItems={items.length}
+          onPageChange={pagination.setPage}
+          itemLabel="món"
+        />
+      )}
     </>
   );
 };

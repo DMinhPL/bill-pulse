@@ -10,6 +10,8 @@ import { Bill } from '../../../shared/types/bill';
 import { formatPercent, formatVND } from '../../../shared/currency';
 import { formatDateLong } from '../../../shared/date';
 import { enrichBillItemsWithTrends } from '../../../shared/priceTracker';
+import { useTablePagination } from '../hooks/useTablePagination';
+import { Pagination } from './Pagination';
 
 interface BillDetailModalProps {
   bill: Bill | null;
@@ -22,6 +24,8 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
   allBills,
   onClose,
 }) => {
+  const pagination = useTablePagination(bill?.items.length ?? 0, bill?.id);
+
   if (!bill) return null;
 
   // Enrich items with historical comparison
@@ -30,6 +34,7 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
     allBills.filter(b => b.id !== bill.id),
     bill.date
   );
+  const pagedItems = enrichedItems.slice(pagination.startIndex, pagination.endIndex);
 
   return (
     <div className="bill-detail fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -97,34 +102,36 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
               Chi tiết mặt hàng & Đơn giá so với quá khứ
             </h4>
 
-            <div className="bill-detail__table-scroll overflow-x-auto rounded-xl border border-slate-800">
-              <table className="bill-detail__table w-full text-left text-xs sm:text-sm">
+            <div className="bill-detail__table-scroll max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-slate-800">
+              <table className="bill-detail__table w-full min-w-[680px] text-left text-xs sm:text-sm">
                 <thead className="bill-detail__table-head bg-slate-950 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
                   <tr>
-                    <th className="bill-detail__col bill-detail__col--name py-2.5 px-3 w-2xs">Tên sản phẩm</th>
-                    <th className="bill-detail__col bill-detail__col--quantity py-2.5 px-2 text-center">SL</th>
-                    <th className="bill-detail__col bill-detail__col--unit-price py-2.5 px-3 text-right">Đơn giá</th>
-                    <th className="bill-detail__col bill-detail__col--trend py-2.5 px-3 text-center">So với trước</th>
-                    <th className="bill-detail__col bill-detail__col--total py-2.5 px-3 text-right">Thành tiền</th>
+                    <th className="bill-detail__col bill-detail__col--name w-[240px] py-2.5 px-3">Tên sản phẩm</th>
+                    <th className="bill-detail__col bill-detail__col--quantity w-[56px] py-2.5 px-2 text-center whitespace-nowrap">SL</th>
+                    <th className="bill-detail__col bill-detail__col--unit-price w-[100px] py-2.5 px-3 text-right whitespace-nowrap">Đơn giá</th>
+                    <th className="bill-detail__col bill-detail__col--trend w-[144px] py-2.5 px-3 text-center whitespace-nowrap">So với trước</th>
+                    <th className="bill-detail__col bill-detail__col--total w-[112px] py-2.5 px-3 text-right whitespace-nowrap">Thành tiền</th>
                   </tr>
                 </thead>
                 <tbody className="bill-detail__table-body divide-y divide-slate-800/80">
-                  {enrichedItems.map((item, idx) => (
-                    <tr key={`${item.canonicalName}-${idx.toString()}`} className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} hover:bg-slate-800/30`}>
-                      <td className="bill-detail__cell bill-detail__cell--name py-2.5 px-3">
-                        <div className="bill-detail__item-name font-medium text-slate-200">{item.canonicalName}</div>
-                        <div className="bill-detail__item-unit text-[10px] text-slate-400">ĐVT: {item.unit}</div>
-                      </td>
+                  {pagedItems.map((item, pageIndex) => {
+                    const idx = pagination.startIndex + pageIndex;
+                    return (
+                      <tr key={`${item.canonicalName}-${idx.toString()}`} className={`bill-detail__row bill-detail__row--${item.trendStatus.toLowerCase()} hover:bg-slate-800/30`}>
+                        <td className="bill-detail__cell bill-detail__cell--name py-2.5 px-3">
+                          <div className="bill-detail__item-name font-medium text-slate-200">{item.canonicalName}</div>
+                          <div className="bill-detail__item-unit text-[10px] text-slate-400">ĐVT: {item.unit}</div>
+                        </td>
 
-                      <td className="bill-detail__cell bill-detail__cell--quantity py-2.5 px-2 text-center text-slate-300 font-medium">
+                      <td className="bill-detail__cell bill-detail__cell--quantity py-2.5 px-2 text-center text-slate-300 font-medium whitespace-nowrap">
                         {item.quantity}
                       </td>
 
-                      <td className="bill-detail__cell bill-detail__cell--unit-price py-2.5 px-3 text-right font-medium text-slate-200">
+                      <td className="bill-detail__cell bill-detail__cell--unit-price py-2.5 px-3 text-right font-medium text-slate-200 whitespace-nowrap">
                         {formatVND(item.unitPrice)}
                       </td>
 
-                      <td className="bill-detail__cell bill-detail__cell--trend py-2.5 px-3 text-center">
+                      <td className="bill-detail__cell bill-detail__cell--trend py-2.5 px-3 text-center whitespace-nowrap">
                         {item.trendStatus === 'INCREASED' ? (
                           <span className="bill-detail__trend bill-detail__trend--increased inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
                             <TrendingUp className="w-3 h-3 text-rose-400" />
@@ -146,14 +153,26 @@ export const BillDetailModal: React.FC<BillDetailModalProps> = ({
                         )}
                       </td>
 
-                      <td className="bill-detail__cell bill-detail__cell--total py-2.5 px-3 text-right font-bold text-white">
+                      <td className="bill-detail__cell bill-detail__cell--total py-2.5 px-3 text-right font-bold text-white whitespace-nowrap">
                         {formatVND(item.totalPrice)}
                       </td>
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+
+            {enrichedItems.length > pagination.pageSize && (
+              <Pagination
+                className="bill-detail__pagination mt-4"
+                page={pagination.page}
+                pageSize={pagination.pageSize}
+                totalItems={enrichedItems.length}
+                onPageChange={pagination.setPage}
+                itemLabel="món"
+              />
+            )}
           </div>
 
           {/* Subtotal & Taxes breakdown */}

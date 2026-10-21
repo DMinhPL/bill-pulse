@@ -3,6 +3,7 @@ import { commitTransaction, createLocalReq, initTransaction, killTransaction } f
 import { errorJson, json } from '../../../../../server/http';
 import { toBill } from '../../../../../server/billDto';
 import { currentUser, payload } from '../../../../../server/payload';
+import { cloneSampleBill } from '../../../../../payload/hooks/seedSampleBills';
 
 export async function POST() {
   const user = await currentUser();
@@ -15,8 +16,13 @@ export async function POST() {
     for (const bill of existing.docs) await p.delete({ collection: 'bills', id: bill.id, req, user, overrideAccess: false });
     const samples = await p.find({ collection: 'sample-bills', pagination: false, depth: 0, req });
     for (const sample of samples.docs) {
-      const { id, createdAt, updatedAt, ...bill } = sample as any;
-      await p.create({ collection: 'bills', data: { ...bill, user: user.id }, req, user, overrideAccess: true });
+      await p.create({
+        collection: 'bills',
+        data: { ...cloneSampleBill(sample), user: user.id },
+        req,
+        user,
+        overrideAccess: true,
+      });
     }
     await commitTransaction(req);
     const result = await p.find({ collection: 'bills', where: { user: { equals: user.id } }, sort: ['-date', '-createdAt'], pagination: false, depth: 0, user, overrideAccess: false });

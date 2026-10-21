@@ -34,6 +34,21 @@ const normalizeAndGenerateCode: CollectionBeforeValidateHook = async ({ data, or
   const code = String(data.code || '').trim().toUpperCase();
   data.code = code || await generateUniqueCode(req);
 
+  const originalCode = String(originalDoc?.code || '').trim().toUpperCase();
+  const isConsumed = Boolean(
+    originalDoc?.consumedAt
+    || originalDoc?.consumedBy
+    || data.consumedAt
+    || data.consumedBy
+  );
+
+  if (originalDoc && isConsumed && data.code !== originalCode) {
+    throw new ValidationError({
+      errors: [{ path: 'code', message: 'A consumed invitation code cannot be changed.' }],
+      req,
+    });
+  }
+
   if (!CODE_RE.test(data.code)) {
     throw new Error('Mã mời phải gồm đúng 8 ký tự chữ và số viết hoa.');
   }
@@ -92,7 +107,12 @@ export const InvitationCodes: CollectionConfig = {
       index: true,
       maxLength: 8,
       minLength: 8,
-      admin: { components: { Field: './payload/components/InvitationCodeField.tsx' } },
+      admin: {
+        components: {
+          Cell: './payload/components/InvitationCodeCell.tsx',
+          Field: './payload/components/InvitationCodeField.tsx',
+        },
+      },
     },
     { name: 'enabled', type: 'checkbox', defaultValue: true },
     { name: 'consumedAt', type: 'date', admin: { readOnly: true } },

@@ -9,6 +9,8 @@ import React from 'react';
 import { PriceTrendSummary } from '../../../shared/types/bill';
 import { formatPercent, formatVND } from '../../../shared/currency';
 import { formatDateShort } from '../../../shared/date';
+import { useTablePagination } from '../hooks/useTablePagination';
+import { Pagination } from './Pagination';
 import { PriceHistoryChart } from './charts/PriceHistoryChart';
 
 interface ItemDeepDiveViewProps {
@@ -27,6 +29,10 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
     priceTrends.find(t => t.canonicalName === selectedItemName) ||
     priceTrends[0] ||
     null;
+  const pagination = useTablePagination(
+    currentItem?.history.length ?? 0,
+    currentItem?.canonicalName
+  );
 
   if (!currentItem) {
     return (
@@ -40,6 +46,7 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
   const timeline = [...currentItem.history].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+  const pagedTimeline = timeline.slice(pagination.startIndex, pagination.endIndex);
 
   // Keep the headline trend consistent with the watchlist: latest purchase vs.
   // the immediately previous purchase. The full history remains visible below.
@@ -183,44 +190,58 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
           Nhật ký các lần mua sản phẩm này ({timeline.length} lần)
         </h4>
 
-        <div className="purchase-log__scroll overflow-x-auto rounded-xl border border-slate-800">
-          <table className="purchase-log__table w-full text-left text-sm">
+        <div className="purchase-log__scroll max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-slate-800">
+          <table className="purchase-log__table w-full min-w-[700px] text-left text-sm">
             <thead className="purchase-log__head bg-slate-950 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
               <tr>
-                <th className="purchase-log__col purchase-log__col--date py-3 px-4">Ngày mua</th>
-                <th className="purchase-log__col purchase-log__col--store py-3 px-4">Địa điểm / Siêu thị</th>
-                <th className="purchase-log__col purchase-log__col--quantity py-3 px-3 text-center">Số lượng</th>
-                <th className="purchase-log__col purchase-log__col--unit-price py-3 px-4 text-right">Đơn giá (VND)</th>
-                <th className="purchase-log__col purchase-log__col--total py-3 px-4 text-right">Tổng tiền (VND)</th>
+                <th className="purchase-log__col purchase-log__col--date w-[120px] py-3 px-4 whitespace-nowrap">Ngày mua</th>
+                <th className="purchase-log__col purchase-log__col--store w-[240px] py-3 px-4">Địa điểm / Siêu thị</th>
+                <th className="purchase-log__col purchase-log__col--quantity w-[96px] py-3 px-3 text-center whitespace-nowrap">Số lượng</th>
+                <th className="purchase-log__col purchase-log__col--unit-price w-[120px] py-3 px-4 text-right whitespace-nowrap">Đơn giá (VND)</th>
+                <th className="purchase-log__col purchase-log__col--total w-[124px] py-3 px-4 text-right whitespace-nowrap">Tổng tiền (VND)</th>
               </tr>
             </thead>
             <tbody className="purchase-log__body divide-y divide-slate-800/80">
-              {timeline.map((point, idx) => (
-                <tr key={`${point.date}-${point.store}-${idx}`} className="purchase-log__row hover:bg-slate-800/30 transition-colors">
-                  <td className="purchase-log__cell purchase-log__cell--date py-3 px-4 font-medium text-slate-200">
-                    {formatDateShort(point.date)}
-                  </td>
+              {pagedTimeline.map((point, pageIndex) => {
+                const idx = pagination.startIndex + pageIndex;
+                return (
+                  <tr key={`${point.date}-${point.store}-${idx}`} className="purchase-log__row hover:bg-slate-800/30 transition-colors">
+                    <td className="purchase-log__cell purchase-log__cell--date py-3 px-4 font-medium text-slate-200 whitespace-nowrap">
+                      {formatDateShort(point.date)}
+                    </td>
                   <td className="purchase-log__cell purchase-log__cell--store py-3 px-4 text-slate-300">
                     <span className="purchase-log__store flex items-center gap-1.5">
                       <Store className="w-3.5 h-3.5 text-slate-500" />
                       {point.store}
                     </span>
                   </td>
-                  <td className="purchase-log__cell purchase-log__cell--quantity py-3 px-3 text-center text-slate-200 font-semibold">
+                  <td className="purchase-log__cell purchase-log__cell--quantity py-3 px-3 text-center text-slate-200 font-semibold whitespace-nowrap">
                     {point.quantity} {currentItem.unit}
                   </td>
-                  <td className="purchase-log__cell purchase-log__cell--unit-price py-3 px-4 text-right font-bold text-white">
+                  <td className="purchase-log__cell purchase-log__cell--unit-price py-3 px-4 text-right font-bold text-white whitespace-nowrap">
                     {formatVND(point.unitPrice)}
                     {point.isWeightNormalized && <small className="block text-[10px] text-amber-300">{formatVND(point.comparablePrice || 0)} / kg</small>}
                   </td>
-                  <td className="purchase-log__cell purchase-log__cell--total py-3 px-4 text-right font-bold text-amber-400">
+                  <td className="purchase-log__cell purchase-log__cell--total py-3 px-4 text-right font-bold text-amber-400 whitespace-nowrap">
                     {formatVND(point.totalPrice ?? point.unitPrice * point.quantity)}
                   </td>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {timeline.length > pagination.pageSize && (
+          <Pagination
+            className="purchase-log__pagination mt-4"
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            totalItems={timeline.length}
+            onPageChange={pagination.setPage}
+            itemLabel="lần mua"
+          />
+        )}
       </div>
     </div>
   );

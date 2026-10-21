@@ -77,12 +77,12 @@ export async function POST(request: Request) {
 
       user = await p.create({ collection: 'users', data: { username, email, displayName, password }, overrideAccess: true, req, context: { skipSeed: true } });
       await p.update({ collection: 'invitation-codes', id: invitationDoc.id, data: { consumedBy: user.id }, overrideAccess: true, req });
+      await seedSampleBillsForUser(String(user.id), req);
       await commitTransaction(req);
     } catch (error) {
       await killTransaction(req);
       throw error;
     }
-    await seedSampleBillsForUser(String(user.id), await createLocalReq({}, p));
     const login = await p.login({ collection: 'users', data: { username, password } });
     if (login.token) {
       const { cookies } = await import('next/headers');
