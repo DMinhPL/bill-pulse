@@ -73,6 +73,14 @@ const existingDocs = async (collection: any) => {
 const productsByLegacyId = new Map<number, string>();
 const usersByLegacyId = new Map<number, string>();
 
+const legacyDate = (value: string | Date) =>
+  value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10);
+
+const legacyTime = (value: string | Date | null) => {
+  if (!value) return undefined;
+  return value instanceof Date ? value.toISOString().slice(11, 16) : String(value).slice(0, 5);
+};
+
 try {
   const legacyProducts = await rows<LegacyProduct>(
     'SELECT id, canonical_name, normalized_key, unit, category FROM products ORDER BY id'
@@ -181,8 +189,8 @@ try {
         merchantName: bill.merchant_name,
         branch: bill.branch || undefined,
         billNumber: bill.bill_number || undefined,
-        date: String(bill.bill_date).slice(0, 10),
-        time: bill.bill_time || undefined,
+        date: legacyDate(bill.bill_date),
+        time: legacyTime(bill.bill_time),
         category: bill.category,
         paymentMethod: bill.payment_method || undefined,
         subtotal: Number(bill.subtotal),
@@ -202,6 +210,36 @@ try {
     importedBillItems += mappedItems.length;
   }
 
+  // Earlier retries made generated IDs before allowIDOnCreate was enabled.
+  // Remove only exact duplicates of source bills, keeping their legacy IDs.
+  let currentBills = await existingDocs('bills');
+  for (const bill of legacyBills) {
+    const userId = usersByLegacyId.get(bill.user_id);
+    if (!userId) continue;
+    const sourceItems = await rows<LegacyItem>(
+      `SELECT raw_name, canonical_name, unit, quantity, unit_price, total_price, discount, category
+         FROM bill_items WHERE bill_id = $1 ORDER BY line_no`,
+      [bill.id]
+    );
+    const duplicateIds = currentBills
+      .filter(candidate => String(candidate.id) !== String(bill.id))
+      .filter(candidate => String(candidate.user) === userId)
+      .filter(candidate => candidate.merchantName === bill.merchant_name)
+      .filter(candidate => candidate.date === legacyDate(bill.bill_date))
+      .filter(candidate => (candidate.billNumber || '') === (bill.bill_number || ''))
+      .filter(candidate => Number(candidate.totalAmount) === Number(bill.total_amount))
+      .filter(candidate => Array.isArray(candidate.items) && candidate.items.length === sourceItems.length)
+      .filter(candidate => candidate.items.every((item: any, index: number) => {
+        const source = sourceItems[index];
+        return source && item.canonicalName === source.canonical_name && Number(item.unitPrice) === Number(source.unit_price) && Number(item.totalPrice) === Number(source.total_price);
+      }))
+      .map(candidate => String(candidate.id));
+    for (const id of duplicateIds) {
+      await payload.delete({ collection: 'bills', id, overrideAccess: true });
+      currentBills = currentBills.filter(candidate => String(candidate.id) !== id);
+    }
+  }
+
   const [legacyProductCount, legacyUserCount, legacyBillCount, legacyItemCount] = await Promise.all([
     rows<{ count: string }>('SELECT count(*)::text AS count FROM products'),
     rows<{ count: string }>('SELECT count(*)::text AS count FROM users'),
@@ -215,13 +253,17 @@ try {
   ]);
   const newItemCount = newBills.reduce((sum, bill) => sum + (Array.isArray(bill.items) ? bill.items.length : 0), 0);
 
+  const legacyProductKeys = new Set(legacyProducts.map(product => product.normalized_key));
+  const legacyUsernames = new Set(legacyUsers.map(user => user.username.toLowerCase()));
+  const legacyBillIds = new Set(legacyBills.map(bill => String(bill.id)));
+  const migratedBills = newBills.filter(bill => legacyBillIds.has(String(bill.id)));
   const counts = {
-    products: { legacy: Number(legacyProductCount[0].count), payload: newProducts.length },
-    users: { legacy: Number(legacyUserCount[0].count), payload: newUsers.length },
-    bills: { legacy: Number(legacyBillCount[0].count), payload: newBills.length },
-    billItems: { legacy: Number(legacyItemCount[0].count), payload: newItemCount },
+    products: { legacy: Number(legacyProductCount[0].count), payload: newProducts.filter(product => legacyProductKeys.has(product.normalizedKey)).length },
+    users: { legacy: Number(legacyUserCount[0].count), payload: newUsers.filter(user => legacyUsernames.has(String(user.username).toLowerCase())).length },
+    bills: { legacy: Number(legacyBillCount[0].count), payload: migratedBills.length },
+    billItems: { legacy: Number(legacyItemCount[0].count), payload: migratedBills.reduce((sum, bill) => sum + (Array.isArray(bill.items) ? bill.items.length : 0), 0) },
   };
-  console.log(JSON.stringify({ counts, importedBillItems }, null, 2));
+  console.log(JSON.stringify({ counts, importedBillItems, payloadTotals: { products: newProducts.length, users: newUsers.length, bills: newBills.length, billItems: newItemCount } }, null, 2));
   if (Object.values(counts).some(count => count.legacy !== count.payload)) {
     throw new Error('Legacy and Payload counts differ.');
   }
