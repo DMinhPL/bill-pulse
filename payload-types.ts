@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     admins: Admin;
     'bill-categories': BillCategory;
+    'invitation-codes': InvitationCode;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -87,6 +88,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
     'bill-categories': BillCategoriesSelect<false> | BillCategoriesSelect<true>;
+    'invitation-codes': InvitationCodesSelect<false> | InvitationCodesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -307,6 +309,19 @@ export interface BillCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invitation-codes".
+ */
+export interface InvitationCode {
+  id: string;
+  code: string;
+  enabled?: boolean | null;
+  consumedAt?: string | null;
+  consumedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -352,6 +367,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bill-categories';
         value: string | BillCategory;
+      } | null)
+    | ({
+        relationTo: 'invitation-codes';
+        value: string | InvitationCode;
       } | null);
   globalSlug?: string | null;
   user:
@@ -548,6 +567,18 @@ export interface BillCategoriesSelect<T extends boolean = true> {
   key?: T;
   label?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invitation-codes_select".
+ */
+export interface InvitationCodesSelect<T extends boolean = true> {
+  code?: T;
+  enabled?: T;
+  consumedAt?: T;
+  consumedBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -605,9 +605,46 @@
   .collection-edit .field-type.relationship .rs__control--is-focused {
     background: #1b2d4a;
     border-color: #f59e0b;
-    box-shadow:
+      box-shadow:
       0 0 0 3px rgb(245 158 11 / 18%),
       inset 0 1px 0 rgb(255 255 255 / 4%);
+  }
+
+  .collection-edit .invitation-code-generate {
+    align-items: center;
+    background: #1b2d4a;
+    border: 1px solid #46607f;
+    border-radius: var(--style-radius-s);
+    color: #f8fafc;
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    height: 40px;
+    justify-content: center;
+    margin: 0;
+    padding: 0 14px;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  .collection-edit .invitation-code-generate:hover,
+  .collection-edit .invitation-code-generate:focus-visible {
+    background: #263d61;
+    border-color: #8b78ff;
+    box-shadow: 0 0 0 3px rgb(139 120 255 / 18%);
+    outline: none;
+  }
+
+  .collection-edit .invitation-code-generate:disabled {
+    background: #172238;
+    border-color: #334155;
+    color: #64748b;
+    cursor: not-allowed;
   }
 
   .collection-edit .field-type.text input::placeholder,

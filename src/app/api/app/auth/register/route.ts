@@ -5,6 +5,7 @@ import { seedSampleBillsForUser } from '../../../../../payload/hooks/seedSampleB
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RE = /^[a-zA-Z0-9._-]{3,32}$/;
+const INVITATION_CODE_RE = /^[A-Z0-9]{8}$/;
 
 export async function POST(request: Request) {
   try {
@@ -13,10 +14,13 @@ export async function POST(request: Request) {
     const email = String(body?.email || '').trim();
     const password = String(body?.password || '');
     const displayName = String(body?.displayName || '').trim() || username;
+    const invitationCode = String(body?.invitationCode || '').trim().toUpperCase();
     if (!USERNAME_RE.test(username)) return errorJson('Tên đăng nhập cần 3–32 ký tự, chỉ gồm chữ không dấu, số và . _ -', 400);
     if (!EMAIL_RE.test(email)) return errorJson('Email không hợp lệ.', 400);
     if (password.length < 8) return errorJson('Mật khẩu cần ít nhất 8 ký tự.', 400);
     if (displayName.length > 80) return errorJson('Tên hiển thị tối đa 80 ký tự.', 400);
+    if (!invitationCode) return errorJson('Mã mời là bắt buộc.', 400);
+    if (!INVITATION_CODE_RE.test(invitationCode)) return errorJson('Mã mời không hợp lệ.', 400);
     const p = await payload();
     const [sameUsername, sameEmail] = await Promise.all([
       p.find({ collection: 'users', where: { username: { equals: username.toLowerCase() } }, limit: 1, overrideAccess: true }),
@@ -28,7 +32,51 @@ export async function POST(request: Request) {
     await initTransaction(req);
     let user;
     try {
+      const invitation = await p.find({
+        collection: 'invitation-codes',
+        where: { code: { equals: invitationCode } },
+        limit: 1,
+        overrideAccess: true,
+        req,
+      });
+      const invitationDoc = invitation.docs[0] as { id: string; enabled?: boolean; consumedAt?: string | null } | undefined;
+      if (!invitationDoc || invitationDoc.enabled === false) {
+        await killTransaction(req);
+        return errorJson('Mã mời không hợp lệ hoặc đã bị vô hiệu hóa.', 403);
+      }
+      if (invitationDoc.consumedAt) {
+        await killTransaction(req);
+        return errorJson('Mã mời này đã được sử dụng.', 409);
+      }
+
+      try {
+        const consumed = await p.update({
+          collection: 'invitation-codes',
+          where: {
+            and: [
+              { code: { equals: invitationCode } },
+              { enabled: { equals: true } },
+              { consumedAt: { exists: false } },
+            ],
+          },
+          data: { consumedAt: new Date().toISOString(), consumedBy: null },
+          overrideAccess: true,
+          req,
+        });
+        const consumedDocs = Array.isArray(consumed)
+          ? consumed
+          : (consumed as { docs?: unknown[] } | null | undefined)?.docs;
+        if (!consumedDocs?.length) {
+          await killTransaction(req);
+          return errorJson('Mã mời này đã được sử dụng.', 409);
+        }
+      } catch {
+        await killTransaction(req);
+        return errorJson('Mã mời này đã được sử dụng.', 409);
+      }
+
       user = await p.create({ collection: 'users', data: { username, email, displayName, password }, overrideAccess: true, req, context: { skipSeed: true } });
+      await p.update({ collection: 'invitation-codes', id: invitationDoc.id, data: { consumedBy: user.id }, overrideAccess: true, req });
       await commitTransaction(req);
     } catch (error) {
       await killTransaction(req);

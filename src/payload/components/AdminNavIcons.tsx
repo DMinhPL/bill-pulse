@@ -9,6 +9,7 @@ import {
   ReceiptIcon,
   ShieldCheckIcon,
   TagsIcon,
+  TicketIcon,
   UsersIcon,
 } from '@animateicons/react/lucide'
 import { createRoot, type Root } from 'react-dom/client'
@@ -24,6 +25,7 @@ const ICONS = {
   'nav-bills': ReceiptIcon,
   'nav-sample-bills': FileTextIcon,
   'nav-bill-categories': TagsIcon,
+  'nav-invitation-codes': TicketIcon,
 } as const
 
 const roots = new Map<Element, Root>()

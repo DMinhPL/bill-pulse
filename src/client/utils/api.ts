@@ -62,10 +62,10 @@ export const authApi = {
   me: () => apiFetch<{ user: AuthUser }>(`${API}/auth/me`),
   login: (username: string, password: string) =>
     apiFetch<{ user: AuthUser }>(`${API}/auth/login`, { method: 'POST', body: { username, password } }),
-  register: (displayName: string, username: string, email: string, password: string) =>
+  register: (displayName: string, username: string, email: string, password: string, invitationCode: string) =>
     apiFetch<{ user: AuthUser }>(`${API}/auth/register`, {
       method: 'POST',
-      body: { displayName, username, email, password },
+      body: { displayName, username, email, password, invitationCode },
     }),
   logout: () => apiFetch<{ success: boolean }>(`${API}/auth/logout`, { method: 'POST' }),
 };
