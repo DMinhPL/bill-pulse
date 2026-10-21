@@ -64,10 +64,16 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     admins: AdminAuthOperations;
+    users: UserAuthOperations;
   };
   blocks: {};
   collections: {
     admins: Admin;
+    users: User;
+    products: Product;
+    'bill-categories': BillCategory;
+    bills: Bill;
+    'sample-bills': SampleBill;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,6 +82,11 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    'bill-categories': BillCategoriesSelect<false> | BillCategoriesSelect<true>;
+    bills: BillsSelect<false> | BillsSelect<true>;
+    'sample-bills': SampleBillsSelect<false> | SampleBillsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -85,13 +96,19 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'ai-settings': AiSetting;
+    lookups: Lookup;
+  };
+  globalsSelect: {
+    'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
+    lookups: LookupsSelect<false> | LookupsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Admin;
+  user: Admin | User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -113,6 +130,23 @@ export interface AdminAuthOperations {
   unlock: {
     email: string;
     password: string;
+  };
+}
+export interface UserAuthOperations {
+  forgotPassword: {
+    username: string;
+  };
+  login: {
+    password: string;
+    username: string;
+  };
+  registerFirstUser: {
+    password: string;
+    username: string;
+    email: string;
+  };
+  unlock: {
+    username: string;
   };
 }
 /**
@@ -144,6 +178,135 @@ export interface Admin {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: string;
+  displayName: string;
+  legacyPasswordHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  username: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  canonicalName: string;
+  normalizedKey: string;
+  unit?: string | null;
+  category?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bill-categories".
+ */
+export interface BillCategory {
+  id: string;
+  key: string;
+  label: string;
+  order: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills".
+ */
+export interface Bill {
+  id: string;
+  user: string | User;
+  merchantName: string;
+  branch?: string | null;
+  billNumber?: string | null;
+  date: string;
+  time?: string | null;
+  category: string;
+  paymentMethod?: string | null;
+  subtotal: number;
+  discountTotal?: number | null;
+  vat?: number | null;
+  totalAmount: number;
+  confidenceNotes?: string | null;
+  fileName?: string | null;
+  fileType?: ('image' | 'pdf') | null;
+  items?:
+    | {
+        rawName: string;
+        canonicalName: string;
+        unit: string;
+        quantity: number;
+        unitPrice: number;
+        totalPrice: number;
+        discount?: number | null;
+        category?: string | null;
+        product?: (string | null) | Product;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sample-bills".
+ */
+export interface SampleBill {
+  id: string;
+  merchantName: string;
+  branch?: string | null;
+  billNumber?: string | null;
+  date: string;
+  time?: string | null;
+  category: string;
+  paymentMethod?: string | null;
+  subtotal: number;
+  discountTotal?: number | null;
+  vat?: number | null;
+  totalAmount: number;
+  confidenceNotes?: string | null;
+  fileName?: string | null;
+  fileType?: ('image' | 'pdf') | null;
+  items?:
+    | {
+        rawName: string;
+        canonicalName: string;
+        unit: string;
+        quantity: number;
+        unitPrice: number;
+        totalPrice: number;
+        discount?: number | null;
+        category?: string | null;
+        product?: (string | null) | Product;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -165,15 +328,41 @@ export interface PayloadKv {
  */
 export interface PayloadLockedDocument {
   id: string;
-  document?: {
-    relationTo: 'admins';
-    value: string | Admin;
-  } | null;
+  document?:
+    | ({
+        relationTo: 'admins';
+        value: string | Admin;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'bill-categories';
+        value: string | BillCategory;
+      } | null)
+    | ({
+        relationTo: 'bills';
+        value: string | Bill;
+      } | null)
+    | ({
+        relationTo: 'sample-bills';
+        value: string | SampleBill;
+      } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'admins';
-    value: string | Admin;
-  };
+  user:
+    | {
+        relationTo: 'admins';
+        value: string | Admin;
+      }
+    | {
+        relationTo: 'users';
+        value: string | User;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -183,10 +372,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: string;
-  user: {
-    relationTo: 'admins';
-    value: string | Admin;
-  };
+  user:
+    | {
+        relationTo: 'admins';
+        value: string | Admin;
+      }
+    | {
+        relationTo: 'users';
+        value: string | User;
+      };
   key?: string | null;
   value?:
     | {
@@ -237,6 +431,128 @@ export interface AdminsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  displayName?: T;
+  legacyPasswordHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  username?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  canonicalName?: T;
+  normalizedKey?: T;
+  unit?: T;
+  category?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bill-categories_select".
+ */
+export interface BillCategoriesSelect<T extends boolean = true> {
+  key?: T;
+  label?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills_select".
+ */
+export interface BillsSelect<T extends boolean = true> {
+  user?: T;
+  merchantName?: T;
+  branch?: T;
+  billNumber?: T;
+  date?: T;
+  time?: T;
+  category?: T;
+  paymentMethod?: T;
+  subtotal?: T;
+  discountTotal?: T;
+  vat?: T;
+  totalAmount?: T;
+  confidenceNotes?: T;
+  fileName?: T;
+  fileType?: T;
+  items?:
+    | T
+    | {
+        rawName?: T;
+        canonicalName?: T;
+        unit?: T;
+        quantity?: T;
+        unitPrice?: T;
+        totalPrice?: T;
+        discount?: T;
+        category?: T;
+        product?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sample-bills_select".
+ */
+export interface SampleBillsSelect<T extends boolean = true> {
+  merchantName?: T;
+  branch?: T;
+  billNumber?: T;
+  date?: T;
+  time?: T;
+  category?: T;
+  paymentMethod?: T;
+  subtotal?: T;
+  discountTotal?: T;
+  vat?: T;
+  totalAmount?: T;
+  confidenceNotes?: T;
+  fileName?: T;
+  fileType?: T;
+  items?:
+    | T
+    | {
+        rawName?: T;
+        canonicalName?: T;
+        unit?: T;
+        quantity?: T;
+        unitPrice?: T;
+        totalPrice?: T;
+        discount?: T;
+        category?: T;
+        product?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -274,6 +590,86 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings".
+ */
+export interface AiSetting {
+  id: string;
+  model?: string | null;
+  scanPrompt?: string | null;
+  inflationPrompt?: string | null;
+  inflationMaxItems?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lookups".
+ */
+export interface Lookup {
+  id: string;
+  paymentMethods?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  units?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  itemCategories?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings_select".
+ */
+export interface AiSettingsSelect<T extends boolean = true> {
+  model?: T;
+  scanPrompt?: T;
+  inflationPrompt?: T;
+  inflationMaxItems?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lookups_select".
+ */
+export interface LookupsSelect<T extends boolean = true> {
+  paymentMethods?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  units?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  itemCategories?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
