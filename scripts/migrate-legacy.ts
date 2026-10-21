@@ -1,5 +1,3 @@
-import 'dotenv/config';
-
 import crypto from 'node:crypto';
 import { Pool } from 'pg';
 import { getPayload } from 'payload';
