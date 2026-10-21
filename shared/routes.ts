@@ -33,6 +33,27 @@ export const ROUTE_PATTERNS = {
 
 export const PAGE_ROUTE_PATTERNS: string[] = Object.values(ROUTE_PATTERNS);
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function routePatternRegExp(pattern: string): RegExp {
+  if (pattern === '/') return /^\/$/;
+
+  const expression = pattern
+    .split('/')
+    .filter(Boolean)
+    .map(segment => {
+      if (segment.startsWith(':')) return segment.endsWith('?') ? '(?:/[^/]+)?' : '/[^/]+';
+      return `/${escapeRegExp(segment)}`;
+    })
+    .join('');
+
+  return new RegExp(`^${expression}/?$`);
+}
+
+/** Server-safe matcher for the Next.js frontend catch-all route. */
+export const matchesPagePath = (pathname: string): boolean =>
+  PAGE_ROUTE_PATTERNS.some(pattern => routePatternRegExp(pattern).test(pathname));
+
 /** 'Sữa tươi TH True Milk 1L' → 'sua-tuoi-th-true-milk-1l' */
 export const toSlug = (name: string) => normalizeItemKey(name).replace(/ /g, '-');
 
