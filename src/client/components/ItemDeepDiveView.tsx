@@ -87,61 +87,67 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
       </div>
 
       {/* Item Overview Hero Card */}
-      <div className={`item-overview item-overview--${latestTrendModifier} bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl relative overflow-hidden`}>
-        <div className="item-overview__main flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="item-overview__info space-y-1">
-            <div className="item-overview__tags flex items-center gap-2">
+      <div className={`item-overview item-overview--${latestTrendModifier} bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl relative overflow-hidden`}>
+        <div className="item-overview__main flex flex-col lg:flex-row lg:items-center justify-between gap-5 lg:gap-6">
+          <div className="item-overview__info min-w-0 space-y-1.5">
+            <div className="item-overview__tags flex flex-wrap items-center gap-2">
               <span className="item-overview__category px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300">
                 {currentItem.category || 'Mặt hàng tiêu dùng'}
               </span>
               <span className="item-overview__unit text-xs text-slate-400">Đơn vị tính: {currentItem.unit}</span>
             </div>
-            <h3 className="item-overview__name text-2xl font-black text-white tracking-tight">
+            <h3 className="item-overview__name text-2xl font-black text-white tracking-tight leading-tight break-words">
               {currentItem.canonicalName}
             </h3>
-            <p className="item-overview__last-purchase text-xs text-slate-400 flex items-center gap-1.5 pt-1">
-              <Store className="w-3.5 h-3.5 text-slate-500" />
-              <span className="item-overview__last-store">Cửa hàng mua gần nhất: <strong>{currentItem.lastStore}</strong></span>
-              <span>•</span>
-              <Calendar className="w-3.5 h-3.5 text-slate-500" />
-              <span className="item-overview__last-date">{currentItem.lastPurchasedDate}</span>
-            </p>
+            <div className="item-overview__last-purchase flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-x-4 pt-2 text-xs text-slate-400">
+              <span className="item-overview__last-store flex min-w-0 items-start gap-1.5">
+                <Store className="item-overview__last-store-icon w-3.5 h-3.5 mt-0.5 text-slate-500 shrink-0" />
+                <span className="item-overview__last-store-text min-w-0">
+                  Cửa hàng mua gần nhất: <strong>{currentItem.lastStore}</strong>
+                </span>
+              </span>
+              <span className="item-overview__last-date flex items-center gap-1.5 whitespace-nowrap">
+                <Calendar className="item-overview__last-date-icon w-3.5 h-3.5 text-slate-500 shrink-0" />
+                {formatDateShort(currentItem.lastPurchasedDate)}
+              </span>
+            </div>
           </div>
 
           {/* Current Price & Total Trend */}
-          <div className="item-overview__pricing bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex items-center gap-6">
-            <div className="item-overview__current-price">
+          <div className="item-overview__pricing w-full lg:w-auto lg:min-w-[420px] bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-stretch gap-0">
+            <div className="item-overview__current-price w-full pb-4 md:pb-0 md:pr-6">
               <span className="item-overview__label text-xs text-slate-400 block">Đơn giá hiện tại (VND)</span>
-              <span className="item-overview__value text-2xl font-black text-amber-400 tracking-tight">
-                {formatVND(currentItem.currentUnitPrice)} / {currentItem.priceUnit || currentItem.unit}
-              </span>
+              <div className="item-overview__value mt-1 flex flex-wrap items-baseline gap-x-2 text-2xl font-black text-amber-400 tracking-tight leading-tight">
+                <span className="item-overview__price-amount whitespace-nowrap">{formatVND(currentItem.currentUnitPrice)}</span>
+                <span className="item-overview__price-unit text-lg text-amber-300">/ {currentItem.priceUnit || currentItem.unit}</span>
+              </div>
             </div>
 
-            <div className="item-overview__overall-change border-l border-slate-800 pl-6">
+            <div className="item-overview__overall-change w-full border-t border-slate-800 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-6">
               <span className="item-overview__label text-xs text-slate-400 block">Biến động so với lần trước</span>
               {currentItem.status === 'INCREASED' ? (
-                <div className="item-overview__change item-overview__change--increased flex items-center gap-1 text-rose-400 font-bold text-base">
+                <div className="item-overview__change item-overview__change--increased mt-1 flex flex-wrap items-center gap-1 text-rose-400 font-bold text-base">
                   <TrendingUp className="w-4 h-4" />
                   <span>+{formatVND(currentItem.priceDiff, { showSign: false })}</span>
                   <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(currentItem.percentChange)})</span>
                 </div>
               ) : currentItem.status === 'DECREASED' ? (
-                <div className="item-overview__change item-overview__change--decreased flex items-center gap-1 text-emerald-400 font-bold text-base">
+                <div className="item-overview__change item-overview__change--decreased mt-1 flex flex-wrap items-center gap-1 text-emerald-400 font-bold text-base">
                   <TrendingDown className="w-4 h-4" />
                   <span>{formatVND(currentItem.priceDiff, { showSign: true })}</span>
                   <span className="item-overview__change-percent text-xs font-semibold">({formatPercent(currentItem.percentChange)})</span>
                 </div>
               ) : currentItem.status === 'NEW' ? (
-                <span className="item-overview__change item-overview__change--new text-blue-300 font-bold text-base">Lần đầu mua</span>
+                <span className="item-overview__change item-overview__change--new mt-1 block text-blue-300 font-bold text-base">Lần đầu mua</span>
               ) : (
-                <span className="item-overview__change item-overview__change--unchanged text-slate-300 font-bold text-base">Không đổi (0%)</span>
+                <span className="item-overview__change item-overview__change--unchanged mt-1 block text-slate-300 font-bold text-base">Không đổi (0%)</span>
               )}
             </div>
           </div>
         </div>
 
         {/* 4 Stat Pills */}
-        <div className="item-overview__stats grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-800/80">
+        <div className="item-overview__stats grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 pt-5 border-t border-slate-800/80">
           <div className="item-overview__stat item-overview__stat--min bg-slate-950 p-3 rounded-xl border border-slate-800/60">
             <span className="item-overview__stat-label text-[11px] text-slate-500 block">Giá thấp nhất từng mua</span>
             <span className="item-overview__stat-value text-sm font-bold text-emerald-400">{formatVND(currentItem.minPrice)}</span>
