@@ -10,14 +10,29 @@ const validateCategory = async (value: unknown, { req }: { req: any }) => {
 };
 
 const itemFields: Field[] = [
-  { name: 'rawName', type: 'text', required: true },
-  { name: 'canonicalName', type: 'text', required: true },
-  { name: 'unit', type: 'text', required: true, defaultValue: 'cái' },
-  { name: 'quantity', type: 'number', required: true, min: 0.001 },
-  { name: 'unitPrice', type: 'number', required: true, min: 0 },
-  { name: 'totalPrice', type: 'number', required: true, min: 0 },
-  { name: 'discount', type: 'number', min: 0 },
-  { name: 'category', type: 'text' },
+  {
+    type: 'row',
+    fields: [
+      { name: 'rawName', type: 'text', required: true },
+      { name: 'canonicalName', type: 'text', required: true },
+    ],
+  },
+  {
+    type: 'row',
+    fields: [
+      { name: 'unit', type: 'text', required: true, defaultValue: 'cái' },
+      { name: 'quantity', type: 'number', required: true, min: 0.001 },
+      { name: 'unitPrice', type: 'number', required: true, min: 0 },
+      { name: 'totalPrice', type: 'number', required: true, min: 0 },
+    ],
+  },
+  {
+    type: 'row',
+    fields: [
+      { name: 'discount', type: 'number', min: 0 },
+      { name: 'category', type: 'text' },
+    ],
+  },
   { name: 'product', type: 'relationship', relationTo: 'products', admin: { readOnly: true } },
 ];
 
