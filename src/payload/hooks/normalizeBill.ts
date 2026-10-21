@@ -5,6 +5,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const categories = ['Supermarket', 'Groceries', 'Dining & Cafe', 'Utilities', 'Electronics & Tech', 'Healthcare & Pharmacy', 'Other'];
 
 export const normalizeBill: CollectionBeforeChangeHook = ({ data, req }) => {
+  if (req.context?.skipNormalize) return data;
   const items = Array.isArray(data.items) ? data.items : [];
   data.merchantName = String(data.merchantName || '').trim() || 'KhÃ´ng rÃµ cá»­a hÃ ng';
   data.date = /^\d{4}-\d{2}-\d{2}$/.test(String(data.date)) ? data.date : today();

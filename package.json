@@ -16,7 +16,8 @@
     "generate:types": "payload generate:types",
     "generate:importmap": "payload generate:importmap",
     "migrate:create": "payload migrate:create",
-    "seed": "payload run scripts/seed-content.ts"
+    "seed": "payload run scripts/seed-content.ts",
+    "migrate:legacy": "payload run scripts/migrate-legacy.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

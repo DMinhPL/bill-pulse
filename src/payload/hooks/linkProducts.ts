@@ -3,6 +3,7 @@ import type { CollectionBeforeChangeHook } from 'payload';
 import { normalizeItemKey } from '../../../shared/priceTracker';
 
 export const linkProducts: CollectionBeforeChangeHook = async ({ data, req }) => {
+  if (req.context?.skipNormalize) return data;
   for (const item of Array.isArray(data.items) ? data.items : []) {
     const canonicalName = String(item.canonicalName || item.rawName || '').trim();
     const normalizedKey = normalizeItemKey(canonicalName);
