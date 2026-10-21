@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Bill, PriceTrendSummary } from '../../../shared/types/bill';
 import { computePriceHistoryMap } from '../../../shared/priceTracker';
-import { authApi, billsApi, ApiError, AuthUser } from '../utils/api';
+import { authApi, billsApi, bootstrapApi, ApiError, AuthUser } from '../utils/api';
 import { useConfirm } from '../components/ConfirmDialog';
 
 export type Toast = { message: string; tone: 'success' | 'error' };
@@ -26,6 +26,8 @@ interface AppData {
   logout: () => Promise<void>;
   isAIInsightsOpen: boolean;
   setAIInsightsOpen: (open: boolean) => void;
+  billCategories: Array<{ key: string; label: string; order: number }>;
+  lookups: { paymentMethods: Array<{ value: string }>; units: Array<{ value: string }>; itemCategories: Array<{ value: string }> };
 }
 
 const AppDataContext = createContext<AppData | null>(null);
@@ -35,7 +37,9 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
   const [bills, setBills] = useState<Bill[]>([]);
   // Which user the current bills belong to; anything else means "still loading"
-  const [loadedForUserId, setLoadedForUserId] = useState<number | null>(null);
+  const [loadedForUserId, setLoadedForUserId] = useState<string | null>(null);
+  const [billCategories, setBillCategories] = useState<AppData['billCategories']>([]);
+  const [lookups, setLookups] = useState<AppData['lookups']>({ paymentMethods: [], units: [], itemCategories: [] });
   const [toast, setToast] = useState<Toast | null>(null);
   const [isAIInsightsOpen, setAIInsightsOpen] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -66,6 +70,10 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .then(({ user }) => setUser(user))
       .catch(() => setUser(null));
   }, []);
+
+  useEffect(() => {
+    bootstrapApi().then(data => { setBillCategories(data.billCategories); setLookups(data.lookups); }).catch(handleApiError);
+  }, [handleApiError]);
 
   // Load this user's bills from the server
   useEffect(() => {
@@ -177,6 +185,8 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logout,
     isAIInsightsOpen,
     setAIInsightsOpen,
+    billCategories,
+    lookups,
   };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

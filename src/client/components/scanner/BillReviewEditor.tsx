@@ -2,7 +2,7 @@ import React from 'react';
 import { CheckCircle2, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
 import { Bill } from '../../../../shared/types/bill';
 import { formatVND } from '../../../../shared/currency';
-import { StagedBill, getStagedBillError, restageItems, toBillItem, createBlankItem } from './stagedBill';
+import { BillCategoryOption, StagedBill, getStagedBillError, restageItems, toBillItem, createBlankItem } from './stagedBill';
 import { BillDetailsForm, BillDetailField } from './BillDetailsForm';
 import { BillItemsTable, BillItemField } from './BillItemsTable';
 
@@ -15,6 +15,8 @@ interface BillReviewEditorProps {
   showValidation: boolean;
   onCancel: () => void;
   onSave: () => void;
+  categoryOptions?: BillCategoryOption[];
+  paymentMethodSuggestions?: string[];
 }
 
 /** Review and edit a staged bill (scanned, sample, or manual) before saving it */
@@ -26,6 +28,8 @@ export const BillReviewEditor: React.FC<BillReviewEditorProps> = ({
   showValidation,
   onCancel,
   onSave,
+  categoryOptions,
+  paymentMethodSuggestions,
 }) => {
   const isManual = bill.source === 'manual';
   const validationError = showValidation ? getStagedBillError(bill) : null;
@@ -136,6 +140,8 @@ export const BillReviewEditor: React.FC<BillReviewEditorProps> = ({
         onChangeDetail={handleChangeDetail}
         onChangeDate={handleChangeDate}
         onChangeAdjustment={handleChangeAdjustment}
+        categoryOptions={categoryOptions}
+        paymentMethodSuggestions={paymentMethodSuggestions}
       />
 
       {/* Quick Notice about Detected Price Trends */}

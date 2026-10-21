@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Bill } from '../../../../shared/types/bill';
-import { BILL_CATEGORY_OPTIONS, PAYMENT_METHOD_SUGGESTIONS, StagedBill } from './stagedBill';
+import { BILL_CATEGORY_OPTIONS, PAYMENT_METHOD_SUGGESTIONS, BillCategoryOption, StagedBill } from './stagedBill';
 
 export type BillDetailField = 'merchantName' | 'branch' | 'billNumber' | 'time' | 'category' | 'paymentMethod';
 
@@ -10,6 +10,8 @@ interface BillDetailsFormProps {
   onChangeDetail: <K extends BillDetailField>(field: K, value: StagedBill[K]) => void;
   onChangeDate: (date: string) => void;
   onChangeAdjustment: (field: 'vat' | 'discountTotal', value: string) => void;
+  categoryOptions?: BillCategoryOption[];
+  paymentMethodSuggestions?: string[];
 }
 
 // text-base below sm: iOS Safari zooms the page when focusing inputs under 16px
@@ -34,6 +36,8 @@ export const BillDetailsForm: React.FC<BillDetailsFormProps> = ({
   onChangeDetail,
   onChangeDate,
   onChangeAdjustment,
+  categoryOptions = BILL_CATEGORY_OPTIONS,
+  paymentMethodSuggestions = PAYMENT_METHOD_SUGGESTIONS,
 }) => {
   const knownMerchants = useMemo(
     () => [...new Set(existingBills.map(b => b.merchantName))].sort(),
@@ -83,7 +87,7 @@ export const BillDetailsForm: React.FC<BillDetailsFormProps> = ({
           onChange={e => onChangeDetail('category', e.target.value as Bill['category'])}
           className={inputClass}
         >
-          {BILL_CATEGORY_OPTIONS.map(o => (
+          {categoryOptions.map(o => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
@@ -139,7 +143,7 @@ export const BillDetailsForm: React.FC<BillDetailsFormProps> = ({
         ))}
       </datalist>
       <datalist id="bill-payment-methods">
-        {PAYMENT_METHOD_SUGGESTIONS.map(m => (
+        {paymentMethodSuggestions.map(m => (
           <option key={m} value={m} />
         ))}
       </datalist>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScanLine } from 'lucide-react';
 import { Bill } from '../../../shared/types/bill';
 import { AppTab } from '../types/navigation';
@@ -15,6 +15,8 @@ import { BillUploadPanel } from './scanner/BillUploadPanel';
 import { ManualEntryPrompt } from './scanner/ManualEntryPrompt';
 import { QuickDemoBills } from './scanner/QuickDemoBills';
 import { BillReviewEditor } from './scanner/BillReviewEditor';
+import { BILL_CATEGORY_OPTIONS, PAYMENT_METHOD_SUGGESTIONS } from './scanner/stagedBill';
+import { useAppData } from '../context/AppDataContext';
 
 interface BillScannerViewProps {
   existingBills: Bill[];
@@ -33,6 +35,19 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
   onSaveBill,
   onNavigateTab,
 }) => {
+  const { billCategories, lookups } = useAppData();
+  const categoryOptions = useMemo(
+    () => billCategories.length > 0
+      ? billCategories.map(category => ({ value: category.key, label: category.label }))
+      : BILL_CATEGORY_OPTIONS,
+    [billCategories]
+  );
+  const paymentMethodSuggestions = useMemo(
+    () => lookups.paymentMethods.length > 0
+      ? lookups.paymentMethods.map(method => method.value)
+      : PAYMENT_METHOD_SUGGESTIONS,
+    [lookups.paymentMethods]
+  );
   const [stagedBill, setStagedBill] = useState<StagedBill | null>(null);
   // The scanned file, kept to be stored with the bill (none for samples / manual entry)
   const [attachment, setAttachment] = useState<BillAttachment | null>(null);
@@ -91,11 +106,13 @@ export const BillScannerView: React.FC<BillScannerViewProps> = ({
           showValidation={showValidation}
           onCancel={discard}
           onSave={handleSave}
+          categoryOptions={categoryOptions}
+          paymentMethodSuggestions={paymentMethodSuggestions}
         />
       ) : (
         <BillUploadPanel
           onScanned={(rawBill, fileName, file) =>
-            stage(stagedBillFromScan(rawBill, fileName, existingBills), file)
+            stage(stagedBillFromScan(rawBill, fileName, existingBills, categoryOptions), file)
           }
           idleContent={
             <>

@@ -39,6 +39,8 @@ export const BILL_CATEGORY_OPTIONS: { value: Bill['category']; label: string }[]
 
 export const PAYMENT_METHOD_SUGGESTIONS = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ngân hàng', 'Ví MoMo', 'ZaloPay', 'VNPay'];
 
+export type BillCategoryOption = { value: Bill['category']; label: string };
+
 /** Local calendar date/time (toISOString would give yesterday's date before 7am in Vietnam) */
 const nowLocal = () => {
   const d = new Date();
@@ -92,7 +94,12 @@ export const restageItems = (
 };
 
 /** Normalizes the loosely-typed JSON returned by /api/scan-bill */
-export const stagedBillFromScan = (rawBill: any, fileName: string, existingBills: Bill[]): StagedBill => {
+export const stagedBillFromScan = (
+  rawBill: any,
+  fileName: string,
+  existingBills: Bill[],
+  categoryOptions: BillCategoryOption[] = BILL_CATEGORY_OPTIONS
+): StagedBill => {
   const date = rawBill.date || new Date().toISOString().split('T')[0];
   return {
     source: 'scan',
@@ -102,7 +109,7 @@ export const stagedBillFromScan = (rawBill: any, fileName: string, existingBills
     date,
     time: rawBill.time || '12:00',
     // Keep the category <select> on a valid option even if the AI invents one
-    category: BILL_CATEGORY_OPTIONS.some(o => o.value === rawBill.category) ? rawBill.category : 'Other',
+    category: categoryOptions.some(o => o.value === rawBill.category) ? rawBill.category : 'Other',
     paymentMethod: rawBill.paymentMethod || 'Tiền mặt',
     items: enrichBillItemsWithTrends(rawBill.items || [], existingBills, date),
     subtotal: Number(rawBill.subtotal) || Number(rawBill.totalAmount) || 0,

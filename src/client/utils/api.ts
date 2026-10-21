@@ -1,7 +1,7 @@
 import { Bill } from '../../../shared/types/bill';
 
 export interface AuthUser {
-  id: number;
+  id: string;
   username: string;
   email: string;
   displayName: string;
@@ -12,6 +12,8 @@ export class ApiError extends Error {
     super(message);
   }
 }
+
+const API = '/api/app';
 
 // ─── In-flight request tracking (drives the global top progress bar) ────────
 
@@ -57,20 +59,22 @@ export async function apiFetch<T>(url: string, options: { method?: string; body?
 }
 
 export const authApi = {
-  me: () => apiFetch<{ user: AuthUser }>('/api/auth/me'),
+  me: () => apiFetch<{ user: AuthUser }>(`${API}/auth/me`),
   login: (username: string, password: string) =>
-    apiFetch<{ user: AuthUser }>('/api/auth/login', { method: 'POST', body: { username, password } }),
+    apiFetch<{ user: AuthUser }>(`${API}/auth/login`, { method: 'POST', body: { username, password } }),
   register: (displayName: string, username: string, email: string, password: string) =>
-    apiFetch<{ user: AuthUser }>('/api/auth/register', {
+    apiFetch<{ user: AuthUser }>(`${API}/auth/register`, {
       method: 'POST',
       body: { displayName, username, email, password },
     }),
-  logout: () => apiFetch<{ success: boolean }>('/api/auth/logout', { method: 'POST' }),
+  logout: () => apiFetch<{ success: boolean }>(`${API}/auth/logout`, { method: 'POST' }),
 };
 
 export const billsApi = {
-  list: () => apiFetch<{ bills: Bill[] }>('/api/bills'),
-  create: (bill: Bill) => apiFetch<{ bill: Bill }>('/api/bills', { method: 'POST', body: bill }),
-  remove: (id: string) => apiFetch<{ success: boolean }>(`/api/bills/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  resetSample: () => apiFetch<{ bills: Bill[] }>('/api/bills/reset-sample', { method: 'POST' }),
+  list: () => apiFetch<{ bills: Bill[] }>(`${API}/bills`),
+  create: (bill: Bill) => apiFetch<{ bill: Bill }>(`${API}/bills`, { method: 'POST', body: bill }),
+  remove: (id: string) => apiFetch<{ success: boolean }>(`${API}/bills/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  resetSample: () => apiFetch<{ bills: Bill[] }>(`${API}/bills/reset-sample`, { method: 'POST' }),
 };
+
+export const bootstrapApi = () => apiFetch<{ billCategories: Array<{ key: string; label: string; order: number }>; lookups: { paymentMethods: Array<{ value: string }>; units: Array<{ value: string }>; itemCategories: Array<{ value: string }> } }>(`${API}/bootstrap`);

@@ -121,7 +121,7 @@ export const BillUploadPanel: React.FC<BillUploadPanelProps> = ({ onScanned, idl
     try {
       setScanStep('2/3 Gemini AI đang đọc chi tiết từng mặt hàng & giá VND...');
 
-      const response = await trackedFetch('/api/scan-bill', {
+      const response = await trackedFetch('/api/app/scan-bill', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

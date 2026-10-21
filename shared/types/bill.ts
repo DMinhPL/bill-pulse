@@ -30,7 +30,7 @@ export interface Bill {
   billNumber?: string;
   date: string; // YYYY-MM-DD
   time?: string;
-  category: 'Supermarket' | 'Groceries' | 'Dining & Cafe' | 'Utilities' | 'Electronics & Tech' | 'Healthcare & Pharmacy' | 'Other';
+  category: string;
   paymentMethod?: string;
   items: BillItem[];
   subtotal: number;

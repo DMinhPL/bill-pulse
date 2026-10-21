@@ -45,7 +45,7 @@ export const AIInsightsModal: React.FC<AIInsightsModalProps> = ({
         lastStore: t.lastStore,
       }));
 
-      const res = await trackedFetch('/api/analyze-inflation', {
+      const res = await trackedFetch('/api/app/analyze-inflation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemsComparison: itemsPayload }),
