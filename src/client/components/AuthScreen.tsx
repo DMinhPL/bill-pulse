@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Receipt, AtSign, Mail, Lock, User, Loader2, AlertCircle, TrendingUp, ScanLine, Sparkles } from 'lucide-react';
+import { Receipt, AtSign, Mail, Lock, User, Ticket, Loader2, AlertCircle, TrendingUp, ScanLine, Sparkles } from 'lucide-react';
 import { authApi, AuthUser } from '../utils/api';
 
 export type AuthMode = 'login' | 'register';
@@ -21,6 +21,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSwitchMode, onAu
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [invitationCode, setInvitationCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -45,6 +46,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSwitchMode, onAu
       }
       if (password.length < 8) return setError('Mật khẩu cần ít nhất 8 ký tự.');
       if (password !== confirmPassword) return setError('Mật khẩu nhập lại không khớp.');
+      if (!/^[A-Z0-9]{8}$/.test(invitationCode.trim().toUpperCase())) return setError('Mã mời phải gồm đúng 8 ký tự chữ và số.');
     }
 
     setSubmitting(true);
@@ -52,7 +54,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSwitchMode, onAu
       const { user } =
         mode === 'login'
           ? await authApi.login(username, password)
-          : await authApi.register(displayName, username, email, password);
+          : await authApi.register(displayName, username, email, password, invitationCode);
       onAuthenticated(user);
     } catch (err: any) {
       setError(err.message || 'Đã có lỗi xảy ra, vui lòng thử lại.');
@@ -147,6 +149,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ mode, onSwitchMode, onAu
                     maxLength={80}
                     autoComplete="name"
                     className={inputClass}
+                  />
+                </div>
+              </label>
+            )}
+
+            {mode === 'register' && (
+              <label className="block">
+                <span className="text-xs font-medium text-slate-300">Mã mời</span>
+                <div className="relative mt-1.5">
+                  <Ticket className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={invitationCode}
+                    onChange={e => setInvitationCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}
+                    placeholder="ABCDEFGH"
+                    maxLength={8}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    className={`${inputClass} tracking-[0.2em]`}
                   />
                 </div>
               </label>

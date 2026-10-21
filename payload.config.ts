@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import { Admins } from './src/payload/collections/Admins';
 import { BillCategories } from './src/payload/collections/BillCategories';
 import { Bills } from './src/payload/collections/Bills';
+import { InvitationCodes } from './src/payload/collections/InvitationCodes';
 import { Products } from './src/payload/collections/Products';
 import { SampleBills } from './src/payload/collections/SampleBills';
 import { Users } from './src/payload/collections/Users';
@@ -38,6 +39,7 @@ export default buildConfig({
     Users,
     Admins,
     BillCategories,
+    InvitationCodes,
   ],
   globals: [AiSettings, Lookups],
   editor: lexicalEditor(),
