@@ -248,9 +248,6 @@ export interface Bill {
   discountTotal?: number | null;
   vat?: number | null;
   totalAmount: number;
-  confidenceNotes?: string | null;
-  fileName?: string | null;
-  fileType?: ('image' | 'pdf') | null;
   items?:
     | {
         rawName: string;
@@ -265,6 +262,9 @@ export interface Bill {
         id?: string | null;
       }[]
     | null;
+  confidenceNotes?: string | null;
+  fileName?: string | null;
+  fileType?: ('image' | 'pdf') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -285,9 +285,6 @@ export interface SampleBill {
   discountTotal?: number | null;
   vat?: number | null;
   totalAmount: number;
-  confidenceNotes?: string | null;
-  fileName?: string | null;
-  fileType?: ('image' | 'pdf') | null;
   items?:
     | {
         rawName: string;
@@ -302,6 +299,9 @@ export interface SampleBill {
         id?: string | null;
       }[]
     | null;
+  confidenceNotes?: string | null;
+  fileName?: string | null;
+  fileType?: ('image' | 'pdf') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -495,9 +495,6 @@ export interface BillsSelect<T extends boolean = true> {
   discountTotal?: T;
   vat?: T;
   totalAmount?: T;
-  confidenceNotes?: T;
-  fileName?: T;
-  fileType?: T;
   items?:
     | T
     | {
@@ -512,6 +509,9 @@ export interface BillsSelect<T extends boolean = true> {
         product?: T;
         id?: T;
       };
+  confidenceNotes?: T;
+  fileName?: T;
+  fileType?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -531,9 +531,6 @@ export interface SampleBillsSelect<T extends boolean = true> {
   discountTotal?: T;
   vat?: T;
   totalAmount?: T;
-  confidenceNotes?: T;
-  fileName?: T;
-  fileType?: T;
   items?:
     | T
     | {
@@ -548,6 +545,9 @@ export interface SampleBillsSelect<T extends boolean = true> {
         product?: T;
         id?: T;
       };
+  confidenceNotes?: T;
+  fileName?: T;
+  fileType?: T;
   updatedAt?: T;
   createdAt?: T;
 }

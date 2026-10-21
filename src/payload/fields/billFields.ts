@@ -22,19 +22,56 @@ const itemFields: Field[] = [
 ];
 
 export const billFields: Field[] = [
-  { name: 'merchantName', type: 'text', required: true, defaultValue: 'Không rõ cửa hàng' },
-  { name: 'branch', type: 'text' },
-  { name: 'billNumber', type: 'text' },
-  { name: 'date', type: 'text', required: true, validate: value => datePattern.test(String(value || '')) || 'Invalid date.' },
-  { name: 'time', type: 'text', validate: value => !value || timePattern.test(String(value)) || 'Invalid time.' },
-  { name: 'category', type: 'text', required: true, validate: validateCategory },
-  { name: 'paymentMethod', type: 'text' },
-  { name: 'subtotal', type: 'number', required: true, min: 0 },
-  { name: 'discountTotal', type: 'number', min: 0 },
-  { name: 'vat', type: 'number', min: 0 },
-  { name: 'totalAmount', type: 'number', required: true, min: 0 },
-  { name: 'confidenceNotes', type: 'text' },
-  { name: 'fileName', type: 'text' },
-  { name: 'fileType', type: 'select', options: [{ label: 'Image', value: 'image' }, { label: 'PDF', value: 'pdf' }] },
-  { name: 'items', type: 'array', fields: itemFields },
+  {
+    type: 'row',
+    fields: [
+      { name: 'merchantName', type: 'text', required: true, defaultValue: 'Không rõ cửa hàng' },
+      { name: 'branch', type: 'text' },
+      { name: 'billNumber', type: 'text' },
+    ],
+  },
+  {
+    type: 'row',
+    fields: [
+      { name: 'date', type: 'text', required: true, validate: value => datePattern.test(String(value || '')) || 'Invalid date.' },
+      { name: 'time', type: 'text', validate: value => !value || timePattern.test(String(value)) || 'Invalid time.' },
+      { name: 'category', type: 'text', required: true, validate: validateCategory },
+      { name: 'paymentMethod', type: 'text' },
+    ],
+  },
+  {
+    type: 'collapsible',
+    label: 'Thanh toán',
+    fields: [
+      {
+        type: 'row',
+        fields: [
+          { name: 'subtotal', type: 'number', required: true, min: 0 },
+          { name: 'discountTotal', type: 'number', min: 0 },
+          { name: 'vat', type: 'number', min: 0 },
+          { name: 'totalAmount', type: 'number', required: true, min: 0 },
+        ],
+      },
+    ],
+  },
+  {
+    type: 'collapsible',
+    label: 'Mặt hàng',
+    fields: [{ name: 'items', type: 'array', admin: { initCollapsed: true }, fields: itemFields }],
+  },
+  {
+    type: 'collapsible',
+    label: 'Tệp & ghi chú',
+    admin: { initCollapsed: true },
+    fields: [
+      { name: 'confidenceNotes', type: 'textarea' },
+      {
+        type: 'row',
+        fields: [
+          { name: 'fileName', type: 'text' },
+          { name: 'fileType', type: 'select', options: [{ label: 'Image', value: 'image' }, { label: 'PDF', value: 'pdf' }] },
+        ],
+      },
+    ],
+  },
 ];
