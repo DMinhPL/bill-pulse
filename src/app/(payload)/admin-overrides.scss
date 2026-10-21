@@ -1,0 +1,51 @@
+@layer payload-default {
+  .nav-wrapper {
+    background: linear-gradient(180deg, var(--theme-elevation-100) 0%, var(--theme-elevation-50) 100%);
+    border-right: 1px solid var(--theme-elevation-150);
+    padding: calc(var(--base) * 0.75);
+  }
+
+  .nav-wrapper .nav {
+    gap: calc(var(--base) * 0.35);
+  }
+
+  .nav-wrapper .nav-group {
+    margin-bottom: calc(var(--base) * 0.9);
+    padding: 0 calc(var(--base) * 0.25);
+  }
+
+  .nav-wrapper .nav-group__toggle {
+    border-radius: var(--style-radius-s);
+    padding: calc(var(--base) * 0.45) calc(var(--base) * 0.6);
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+
+  .nav-wrapper .nav-group__toggle:hover,
+  .nav-wrapper .nav-group__toggle:focus-visible {
+    background: var(--theme-elevation-150);
+  }
+
+  .nav-wrapper .nav-group__content {
+    display: grid;
+    gap: calc(var(--base) * 0.2);
+    margin-top: calc(var(--base) * 0.25);
+  }
+
+  .nav-wrapper .nav-group__content a {
+    border-radius: var(--style-radius-s);
+    padding: calc(var(--base) * 0.55) calc(var(--base) * 0.7);
+    transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+  }
+
+  .nav-wrapper .nav-group__content a:hover,
+  .nav-wrapper .nav-group__content a:focus-visible {
+    background: var(--theme-elevation-150);
+    transform: translateX(2px);
+  }
+
+  .nav-wrapper .nav-group__content a[aria-current='page'] {
+    background: var(--theme-elevation-200);
+    color: var(--theme-elevation-1000);
+    font-weight: 600;
+  }
+}
