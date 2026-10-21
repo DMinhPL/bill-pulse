@@ -6,13 +6,13 @@ import { INITIAL_SAMPLE_BILLS } from '../shared/seed/sampleBills';
 const payload = await getPayload({ config });
 
 const categories = [
-  ['Supermarket', 'SiÃªu thá»‹'],
-  ['Groceries', 'Táº¡p hÃ³a'],
-  ['Dining & Cafe', 'Ä‚n uá»‘ng & CÃ  phÃª'],
-  ['Utilities', 'Tiá»‡n Ã­ch'],
-  ['Electronics & Tech', 'Äiá»‡n tá»­ & CÃ´ng nghá»‡'],
-  ['Healthcare & Pharmacy', 'Y táº¿ & NhÃ  thuá»‘c'],
-  ['Other', 'KhÃ¡c'],
+  ['Supermarket', 'Siêu thị'],
+  ['Groceries', 'Tạp hóa'],
+  ['Dining & Cafe', 'Ăn uống & Cà phê'],
+  ['Utilities', 'Tiện ích'],
+  ['Electronics & Tech', 'Điện tử & Công nghệ'],
+  ['Healthcare & Pharmacy', 'Y tế & Nhà thuốc'],
+  ['Other', 'Khác'],
 ];
 
 for (const [order, [key, label]] of categories.entries()) {
@@ -26,9 +26,9 @@ const upsertGlobal = async (slug: 'lookups' | 'ai-settings', data: Record<string
 };
 
 await upsertGlobal('lookups', {
-  paymentMethods: ['Tiá»n máº·t', 'Tháº» tÃ­n dá»¥ng/ghi ná»£', 'Chuyá»ƒn khoáº£n', 'MoMo', 'VNPay', 'ZaloPay', 'KhÃ¡c'].map(value => ({ value })),
-  units: ['há»™p', 'chai', 'kg', 'gÃ³i', 'lon', 'ly', 'cÃ¡i', 'pháº§n'].map(value => ({ value })),
-  itemCategories: ['Thá»±c pháº©m', 'Äá»“ uá»‘ng', 'Sá»¯a - BÆ¡ trá»©ng', 'Gia dá»¥ng', 'ChÄƒm sÃ³c cÃ¡ nhÃ¢n', 'Rau cá»§ quáº£'].map(value => ({ value })),
+  paymentMethods: ['Tiền mặt', 'Thẻ tín dụng/ghi nợ', 'Chuyển khoản', 'MoMo', 'VNPay', 'ZaloPay', 'Khác'].map(value => ({ value })),
+  units: ['hộp', 'chai', 'kg', 'gói', 'lon', 'ly', 'cái', 'phần'].map(value => ({ value })),
+  itemCategories: ['Thực phẩm', 'Đồ uống', 'Sữa - Bơ trứng', 'Gia dụng', 'Chăm sóc cá nhân', 'Rau củ quả'].map(value => ({ value })),
 });
 await upsertGlobal('ai-settings', {
   model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',

@@ -5,7 +5,7 @@ import { currentUser } from '../../../../server/payload';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  if (!(await currentUser())) return errorJson('Vui lÃ²ng Ä‘Äƒng nháº­p.', 401);
+  if (!(await currentUser())) return errorJson('Vui lòng đăng nhập.', 401);
   try {
     const { itemsComparison } = await request.json();
     if (!itemsComparison || !Array.isArray(itemsComparison) || itemsComparison.length === 0) return errorJson('itemsComparison array is required.', 400);

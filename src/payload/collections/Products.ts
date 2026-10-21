@@ -9,7 +9,7 @@ export const Products: CollectionConfig = {
   fields: [
     { name: 'canonicalName', type: 'text', required: true },
     { name: 'normalizedKey', type: 'text', required: true, unique: true, index: true, admin: { readOnly: true } },
-    { name: 'unit', type: 'text', defaultValue: 'cÃ¡i' },
-    { name: 'category', type: 'text', defaultValue: 'HÃ ng tiÃªu dÃ¹ng' },
+    { name: 'unit', type: 'text', defaultValue: 'cái' },
+    { name: 'category', type: 'text', defaultValue: 'Hàng tiêu dùng' },
   ],
 };

@@ -13,7 +13,7 @@ export const linkProducts: CollectionBeforeChangeHook = async ({ data, req }) =>
       try {
         product = await req.payload.create({
           collection: 'products',
-          data: { canonicalName, normalizedKey, unit: item.unit || 'cÃ¡i', category: item.category || 'HÃ ng tiÃªu dÃ¹ng' },
+          data: { canonicalName, normalizedKey, unit: item.unit || 'cái', category: item.category || 'Hàng tiêu dùng' },
           req,
           overrideAccess: true,
         });

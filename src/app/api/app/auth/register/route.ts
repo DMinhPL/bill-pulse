@@ -13,17 +13,17 @@ export async function POST(request: Request) {
     const email = String(body?.email || '').trim();
     const password = String(body?.password || '');
     const displayName = String(body?.displayName || '').trim() || username;
-    if (!USERNAME_RE.test(username)) return errorJson('TÃªn Ä‘Äƒng nháº­p cáº§n 3â€“32 kÃ½ tá»±, chá»‰ gá»“m chá»¯ khÃ´ng dáº¥u, sá»‘ vÃ  . _ -', 400);
-    if (!EMAIL_RE.test(email)) return errorJson('Email khÃ´ng há»£p lá»‡.', 400);
-    if (password.length < 8) return errorJson('Máº­t kháº©u cáº§n Ã­t nháº¥t 8 kÃ½ tá»±.', 400);
-    if (displayName.length > 80) return errorJson('TÃªn hiá»ƒn thá»‹ tá»‘i Ä‘a 80 kÃ½ tá»±.', 400);
+    if (!USERNAME_RE.test(username)) return errorJson('Tên đăng nhập cần 3–32 ký tự, chỉ gồm chữ không dấu, số và . _ -', 400);
+    if (!EMAIL_RE.test(email)) return errorJson('Email không hợp lệ.', 400);
+    if (password.length < 8) return errorJson('Mật khẩu cần ít nhất 8 ký tự.', 400);
+    if (displayName.length > 80) return errorJson('Tên hiển thị tối đa 80 ký tự.', 400);
     const p = await payload();
     const [sameUsername, sameEmail] = await Promise.all([
       p.find({ collection: 'users', where: { username: { equals: username.toLowerCase() } }, limit: 1, overrideAccess: true }),
       p.find({ collection: 'users', where: { email: { equals: email.toLowerCase() } }, limit: 1, overrideAccess: true }),
     ]);
-    if (sameUsername.docs.length) return errorJson('TÃªn Ä‘Äƒng nháº­p nÃ y Ä‘Ã£ cÃ³ ngÆ°á»i dÃ¹ng.', 409);
-    if (sameEmail.docs.length) return errorJson('Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.', 409);
+    if (sameUsername.docs.length) return errorJson('Tên đăng nhập này đã có người dùng.', 409);
+    if (sameEmail.docs.length) return errorJson('Email này đã được đăng ký.', 409);
     const req = await createLocalReq({}, p);
     await initTransaction(req);
     let user;
@@ -43,6 +43,6 @@ export async function POST(request: Request) {
     return json({ user: { id: String(user.id), username: user.username, email: user.email, displayName: user.displayName } }, 201);
   } catch (error) {
     console.error('Register failed:', error);
-    return errorJson('KhÃ´ng thá»ƒ Ä‘Äƒng kÃ½ lÃºc nÃ y.', 500);
+    return errorJson('Không thể đăng ký lúc này.', 500);
   }
 }

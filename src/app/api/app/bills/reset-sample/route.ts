@@ -6,7 +6,7 @@ import { currentUser, payload } from '../../../../../server/payload';
 
 export async function POST() {
   const user = await currentUser();
-  if (!user) return errorJson('Vui lÃ²ng Ä‘Äƒng nháº­p.', 401);
+  if (!user) return errorJson('Vui lòng đăng nhập.', 401);
   const p = await payload();
   const req = await createLocalReq({ user }, p);
   await initTransaction(req);
@@ -24,6 +24,6 @@ export async function POST() {
   } catch (error) {
     await killTransaction(req);
     console.error('Reset sample bills failed:', error);
-    return errorJson('KhÃ´ng thá»ƒ khÃ´i phá»¥c dá»¯ liá»‡u máº«u.', 500);
+    return errorJson('Không thể khôi phục dữ liệu mẫu.', 500);
   }
 }

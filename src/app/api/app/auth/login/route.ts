@@ -5,7 +5,7 @@ import { errorJson, json } from '../../../../../server/http';
 import { verifyPassword } from '../../../../../server/legacyPassword';
 import { payload } from '../../../../../server/payload';
 
-const FAILURE = 'TÃªn Ä‘Äƒng nháº­p hoáº·c máº­t kháº©u khÃ´ng Ä‘Ãºng.';
+const FAILURE = 'Tên đăng nhập hoặc mật khẩu không đúng.';
 
 export async function POST(request: Request) {
   try {

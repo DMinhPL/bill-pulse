@@ -4,7 +4,7 @@ import { isAdmin } from '../access/isAdmin';
 import { seedSampleBills } from '../hooks/seedSampleBills';
 
 const USERNAME_RE = /^[a-zA-Z0-9._-]{3,32}$/;
-const INVALID_USERNAME = 'TÃªn Ä‘Äƒng nháº­p cáº§n 3â€“32 kÃ½ tá»±, chá»‰ gá»“m chá»¯ khÃ´ng dáº¥u, sá»‘ vÃ  . _ -';
+const INVALID_USERNAME = 'Tên đăng nhập cần 3–32 ký tự, chỉ gồm chữ không dấu, số và . _ -';
 
 const normalizeAndValidateUsername: CollectionBeforeValidateHook = ({ data }) => {
   if (!data) return data;

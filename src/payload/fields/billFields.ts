@@ -12,7 +12,7 @@ const validateCategory = async (value: unknown, { req }: { req: any }) => {
 const itemFields: Field[] = [
   { name: 'rawName', type: 'text', required: true },
   { name: 'canonicalName', type: 'text', required: true },
-  { name: 'unit', type: 'text', required: true, defaultValue: 'cÃ¡i' },
+  { name: 'unit', type: 'text', required: true, defaultValue: 'cái' },
   { name: 'quantity', type: 'number', required: true, min: 0.001 },
   { name: 'unitPrice', type: 'number', required: true, min: 0 },
   { name: 'totalPrice', type: 'number', required: true, min: 0 },
@@ -22,7 +22,7 @@ const itemFields: Field[] = [
 ];
 
 export const billFields: Field[] = [
-  { name: 'merchantName', type: 'text', required: true, defaultValue: 'KhÃ´ng rÃµ cá»­a hÃ ng' },
+  { name: 'merchantName', type: 'text', required: true, defaultValue: 'Không rõ cửa hàng' },
   { name: 'branch', type: 'text' },
   { name: 'billNumber', type: 'text' },
   { name: 'date', type: 'text', required: true, validate: value => datePattern.test(String(value || '')) || 'Invalid date.' },
