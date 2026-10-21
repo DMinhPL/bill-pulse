@@ -375,7 +375,7 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
                     <div className="price-card__price price-card__price--current">
                       <span className="price-card__price-label text-[11px] text-slate-400 block">Đơn giá gần nhất:</span>
                       <span className="price-card__price-value text-lg font-bold text-white">
-                        {formatVND(item.currentUnitPrice)}
+                        {formatVND(item.currentUnitPrice)} / {item.priceUnit || item.unit}
                       </span>
                     </div>
 
@@ -383,7 +383,7 @@ export const PriceWatchlistView: React.FC<PriceWatchlistViewProps> = ({
                       <div className="price-card__price price-card__price--previous text-right">
                         <span className="price-card__price-label text-[11px] text-slate-400 block">Lần mua trước đó:</span>
                         <span className="price-card__price-value text-sm text-slate-400 font-medium">
-                          {formatVND(item.previousUnitPrice)}
+                          {formatVND(item.previousUnitPrice)} / {item.priceUnit || item.unit}
                         </span>
                       </div>
                     )}

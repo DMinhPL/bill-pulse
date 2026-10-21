@@ -8,6 +8,7 @@ import {
 import React from 'react';
 import { PriceTrendSummary } from '../../../shared/types/bill';
 import { formatPercent, formatVND } from '../../../shared/currency';
+import { formatDateShort } from '../../../shared/date';
 import { PriceHistoryChart } from './charts/PriceHistoryChart';
 
 interface ItemDeepDiveViewProps {
@@ -37,7 +38,7 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
 
   // Sort history chronologically
   const timeline = [...currentItem.history].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   // Keep the headline trend consistent with the watchlist: latest purchase vs.
@@ -65,9 +66,9 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
             onChange={e => onSelectItem(e.target.value)}
             className="item-deep-dive__item-select w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm font-semibold rounded-xl p-2.5 focus:outline-none focus:border-amber-500 shadow-md"
           >
-            {priceTrends.map(t => (
-              <option key={t.canonicalName} value={t.canonicalName}>
-                {t.canonicalName} ({formatVND(t.currentUnitPrice)})
+            {priceTrends.map((t, index) => (
+              <option key={`${t.canonicalName}-${t.priceUnit || t.unit}-${index}`} value={t.canonicalName}>
+                {t.canonicalName} ({formatVND(t.currentUnitPrice)} / {t.priceUnit || t.unit})
               </option>
             ))}
           </select>
@@ -101,7 +102,7 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
             <div className="item-overview__current-price">
               <span className="item-overview__label text-xs text-slate-400 block">Đơn giá hiện tại (VND)</span>
               <span className="item-overview__value text-2xl font-black text-amber-400 tracking-tight">
-                {formatVND(currentItem.currentUnitPrice)}
+                {formatVND(currentItem.currentUnitPrice)} / {currentItem.priceUnit || currentItem.unit}
               </span>
             </div>
 
@@ -195,9 +196,9 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
             </thead>
             <tbody className="purchase-log__body divide-y divide-slate-800/80">
               {timeline.map((point, idx) => (
-                <tr key={idx} className="purchase-log__row hover:bg-slate-800/30 transition-colors">
+                <tr key={`${point.date}-${point.store}-${idx}`} className="purchase-log__row hover:bg-slate-800/30 transition-colors">
                   <td className="purchase-log__cell purchase-log__cell--date py-3 px-4 font-medium text-slate-200">
-                    {point.date}
+                    {formatDateShort(point.date)}
                   </td>
                   <td className="purchase-log__cell purchase-log__cell--store py-3 px-4 text-slate-300">
                     <span className="purchase-log__store flex items-center gap-1.5">
@@ -210,9 +211,10 @@ export const ItemDeepDiveView: React.FC<ItemDeepDiveViewProps> = ({
                   </td>
                   <td className="purchase-log__cell purchase-log__cell--unit-price py-3 px-4 text-right font-bold text-white">
                     {formatVND(point.unitPrice)}
+                    {point.isWeightNormalized && <small className="block text-[10px] text-amber-300">{formatVND(point.comparablePrice || 0)} / kg</small>}
                   </td>
                   <td className="purchase-log__cell purchase-log__cell--total py-3 px-4 text-right font-bold text-amber-400">
-                    {formatVND(point.unitPrice * point.quantity)}
+                    {formatVND(point.totalPrice ?? point.unitPrice * point.quantity)}
                   </td>
                 </tr>
               ))}

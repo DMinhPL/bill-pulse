@@ -18,6 +18,7 @@ import {
 import { Bill, PriceTrendSummary } from '../../../shared/types/bill';
 import { AppTab } from '../types/navigation';
 import { formatVND, formatPercent } from '../../../shared/currency';
+import { formatDateShort } from '../../../shared/date';
 import { getTopPriceIncreases, getTopPriceDecreases } from '../../../shared/priceTracker';
 import { SpendingShareChart, computeSpendingShare, MonthRange, formatMonthKey } from './charts/SpendingShareChart';
 import { MonthRangePicker, MonthRangePreset, rangeForPreset } from './MonthRangePicker';
@@ -463,7 +464,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
                     {bill.category}
                   </span>
-                  <span className="text-xs text-slate-400">{bill.date}</span>
+                  <span className="text-xs text-slate-400">{formatDateShort(bill.date)}</span>
                 </div>
                 <h4 className="font-semibold text-sm text-white mt-2 truncate">
                   {bill.merchantName}

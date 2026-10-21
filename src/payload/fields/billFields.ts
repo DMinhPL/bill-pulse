@@ -72,7 +72,15 @@ export const billFields: Field[] = [
   {
     type: 'collapsible',
     label: 'Mặt hàng',
-    fields: [{ name: 'items', type: 'array', admin: { initCollapsed: true }, fields: itemFields }],
+    fields: [{
+      name: 'items',
+      type: 'array',
+      admin: {
+        components: { RowLabel: './payload/components/BillItemRowLabel.tsx' },
+        initCollapsed: true,
+      },
+      fields: itemFields,
+    }],
   },
   {
     type: 'collapsible',

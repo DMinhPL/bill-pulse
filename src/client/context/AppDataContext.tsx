@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Bill, PriceTrendSummary } from '../../../shared/types/bill';
 import { computePriceHistoryMap } from '../../../shared/priceTracker';
+import { formatDateShort } from '../../../shared/date';
 import { authApi, billsApi, bootstrapApi, ApiError, AuthUser } from '../utils/api';
 import { useConfirm } from '../components/ConfirmDialog';
 
@@ -115,7 +116,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       tone: 'danger',
       title: 'Xóa hóa đơn này?',
       message: bill
-        ? `Hóa đơn "${bill.merchantName}" ngày ${bill.date} sẽ bị xóa khỏi lịch sử theo dõi. Không thể hoàn tác.`
+        ? `Hóa đơn "${bill.merchantName}" ngày ${formatDateShort(bill.date)} sẽ bị xóa khỏi lịch sử theo dõi. Không thể hoàn tác.`
         : 'Hóa đơn sẽ bị xóa khỏi lịch sử theo dõi. Không thể hoàn tác.',
       confirmLabel: 'Xóa hóa đơn',
       busyLabel: 'Đang xóa...',

@@ -45,7 +45,7 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ points, un
       datasets: [
         {
           label: 'Đơn giá',
-          data: points.map((p, i) => ({ x: times[i], y: p.unitPrice })),
+          data: points.map((p, i) => ({ x: times[i], y: p.comparablePrice ?? p.unitPrice })),
           borderColor: color,
           borderWidth: 2,
           tension: 0,
@@ -84,7 +84,7 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ points, un
           displayColors: false,
           callbacks: {
             title: items => formatDay(times[items[0].dataIndex]),
-            label: item => `${formatVND(points[item.dataIndex].unitPrice)} / ${unit}`,
+            label: item => `${formatVND(points[item.dataIndex].comparablePrice ?? points[item.dataIndex].unitPrice)} / ${points[item.dataIndex].priceUnit || unit}`,
             footer: items => {
               const point = points[items[0].dataIndex];
               return [`Cửa hàng: ${point.store}`, `Số lượng: ${point.quantity} ${unit}`];

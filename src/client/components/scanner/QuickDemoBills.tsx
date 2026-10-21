@@ -2,6 +2,7 @@ import React from 'react';
 import { Receipt } from 'lucide-react';
 import { QUICK_DEMO_BILLS, SampleQuickBill } from '../../../../shared/seed/sampleBills';
 import { formatVND } from '../../../../shared/currency';
+import { formatDateShort } from '../../../../shared/date';
 
 /** Sample bills that skip the upload so the review flow can be tried instantly */
 export const QuickDemoBills: React.FC<{ onPick: (demo: SampleQuickBill) => void }> = ({ onPick }) => (
@@ -34,7 +35,7 @@ export const QuickDemoBills: React.FC<{ onPick: (demo: SampleQuickBill) => void 
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 text-[11px] text-slate-400">
             <span className="min-w-0 truncate">
-              {demo.merchant} • {demo.date}
+              {demo.merchant} • {formatDateShort(demo.date)}
             </span>
             <span className="text-emerald-400 font-medium group-hover:underline flex items-center gap-1 whitespace-nowrap shrink-0">
               Thử quét ngay →

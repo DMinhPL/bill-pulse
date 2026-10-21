@@ -16,6 +16,7 @@
     "migrate:legacy": "payload run scripts/migrate-legacy.ts"
   },
   "dependencies": {
+    "@animateicons/react": "^0.12.1",
     "@google/genai": "^2.4.0",
     "@payloadcms/db-postgres": "^3.91.0",
     "@payloadcms/next": "^3.91.0",

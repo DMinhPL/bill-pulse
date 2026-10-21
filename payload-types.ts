@@ -63,17 +63,17 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    admins: AdminAuthOperations;
     users: UserAuthOperations;
+    admins: AdminAuthOperations;
   };
   blocks: {};
   collections: {
-    admins: Admin;
-    users: User;
     products: Product;
-    'bill-categories': BillCategory;
     bills: Bill;
     'sample-bills': SampleBill;
+    users: User;
+    admins: Admin;
+    'bill-categories': BillCategory;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,12 +81,12 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    admins: AdminsSelect<false> | AdminsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
-    'bill-categories': BillCategoriesSelect<false> | BillCategoriesSelect<true>;
     bills: BillsSelect<false> | BillsSelect<true>;
     'sample-bills': SampleBillsSelect<false> | SampleBillsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    admins: AdminsSelect<false> | AdminsSelect<true>;
+    'bill-categories': BillCategoriesSelect<false> | BillCategoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -108,10 +108,27 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Admin | User;
+  user: User | Admin;
   jobs: {
     tasks: unknown;
     workflows: unknown;
+  };
+}
+export interface UserAuthOperations {
+  forgotPassword: {
+    username: string;
+  };
+  login: {
+    password: string;
+    username: string;
+  };
+  registerFirstUser: {
+    password: string;
+    username: string;
+    email: string;
+  };
+  unlock: {
+    username: string;
   };
 }
 export interface AdminAuthOperations {
@@ -132,79 +149,6 @@ export interface AdminAuthOperations {
     password: string;
   };
 }
-export interface UserAuthOperations {
-  forgotPassword: {
-    username: string;
-  };
-  login: {
-    password: string;
-    username: string;
-  };
-  registerFirstUser: {
-    password: string;
-    username: string;
-    email: string;
-  };
-  unlock: {
-    username: string;
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins".
- */
-export interface Admin {
-  id: string;
-  name?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'admins';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: string;
-  displayName: string;
-  legacyPasswordHash?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  username: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
@@ -215,18 +159,6 @@ export interface Product {
   normalizedKey: string;
   unit?: string | null;
   category?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "bill-categories".
- */
-export interface BillCategory {
-  id: string;
-  key: string;
-  label: string;
-  order: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -270,6 +202,35 @@ export interface Bill {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: string;
+  displayName: string;
+  legacyPasswordHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  username: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sample-bills".
  */
 export interface SampleBill {
@@ -307,6 +268,45 @@ export interface SampleBill {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admins".
+ */
+export interface Admin {
+  id: string;
+  name?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'admins';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bill-categories".
+ */
+export interface BillCategory {
+  id: string;
+  key: string;
+  label: string;
+  order: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -330,20 +330,8 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: 'admins';
-        value: string | Admin;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
         relationTo: 'products';
         value: string | Product;
-      } | null)
-    | ({
-        relationTo: 'bill-categories';
-        value: string | BillCategory;
       } | null)
     | ({
         relationTo: 'bills';
@@ -352,16 +340,28 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sample-bills';
         value: string | SampleBill;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'admins';
+        value: string | Admin;
+      } | null)
+    | ({
+        relationTo: 'bill-categories';
+        value: string | BillCategory;
       } | null);
   globalSlug?: string | null;
   user:
     | {
-        relationTo: 'admins';
-        value: string | Admin;
-      }
-    | {
         relationTo: 'users';
         value: string | User;
+      }
+    | {
+        relationTo: 'admins';
+        value: string | Admin;
       };
   updatedAt: string;
   createdAt: string;
@@ -374,12 +374,12 @@ export interface PayloadPreference {
   id: string;
   user:
     | {
-        relationTo: 'admins';
-        value: string | Admin;
-      }
-    | {
         relationTo: 'users';
         value: string | User;
+      }
+    | {
+        relationTo: 'admins';
+        value: string | Admin;
       };
   key?: string | null;
   value?:
@@ -407,56 +407,6 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins_select".
- */
-export interface AdminsSelect<T extends boolean = true> {
-  name?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  displayName?: T;
-  legacyPasswordHash?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  username?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -464,17 +414,6 @@ export interface ProductsSelect<T extends boolean = true> {
   normalizedKey?: T;
   unit?: T;
   category?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "bill-categories_select".
- */
-export interface BillCategoriesSelect<T extends boolean = true> {
-  key?: T;
-  label?: T;
-  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -548,6 +487,67 @@ export interface SampleBillsSelect<T extends boolean = true> {
   confidenceNotes?: T;
   fileName?: T;
   fileType?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  displayName?: T;
+  legacyPasswordHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  username?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admins_select".
+ */
+export interface AdminsSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bill-categories_select".
+ */
+export interface BillCategoriesSelect<T extends boolean = true> {
+  key?: T;
+  label?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

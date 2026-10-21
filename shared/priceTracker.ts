@@ -1,4 +1,5 @@
 import { Bill, BillItem, BillItemWithTrend, PricePoint, PriceTrendStatus, PriceTrendSummary } from './types/bill.js';
+import { getComparablePrice } from './weightPricing';
 
 /**
  * Normalize Vietnamese text for fuzzy matching
@@ -54,13 +55,14 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
     for (const item of bill.items) {
       const canonical = item.canonicalName.trim();
       const normKey = normalizeItemKey(canonical);
+      const comparable = getComparablePrice(item);
 
       // Find existing group by canonical key or fuzzy match
-      let groupKey = normKey;
+      let groupKey = `${normKey}::${comparable.unit}`;
       let existingGroup: PriceTrendSummary | undefined = undefined;
 
       for (const [k, v] of map.entries()) {
-        if (isSameProduct(v.canonicalName, canonical)) {
+        if (isSameProduct(v.canonicalName, canonical) && v.priceUnit === comparable.unit) {
           groupKey = k;
           existingGroup = v;
           break;
@@ -70,6 +72,11 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
       const point: PricePoint = {
         date: bill.date,
         unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        comparablePrice: comparable.value,
+        pricePerKg: comparable.pricePerKg,
+        priceUnit: comparable.unit,
+        isWeightNormalized: comparable.isWeightNormalized,
         store: bill.merchantName,
         billId: bill.id,
         quantity: item.quantity,
@@ -80,14 +87,17 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
           canonicalName: canonical,
           unit: item.unit || 'cái',
           category: item.category || 'Hàng tiêu dùng',
-          currentUnitPrice: item.unitPrice,
+          currentUnitPrice: comparable.value,
+          pricePerKg: comparable.pricePerKg,
+          priceUnit: comparable.unit,
+          isWeightNormalized: comparable.isWeightNormalized,
           previousUnitPrice: null,
           priceDiff: 0,
           percentChange: 0,
           status: 'NEW',
-          minPrice: item.unitPrice,
-          maxPrice: item.unitPrice,
-          avgPrice: item.unitPrice,
+          minPrice: comparable.value,
+          maxPrice: comparable.value,
+          avgPrice: comparable.value,
           history: [point],
           lastPurchasedDate: bill.date,
           lastStore: bill.merchantName,
@@ -96,7 +106,7 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
         });
       } else {
         const prevPrice = existingGroup.currentUnitPrice;
-        const diff = item.unitPrice - prevPrice;
+        const diff = comparable.value - prevPrice;
         const pct = prevPrice > 0 ? (diff / prevPrice) * 100 : 0;
 
         let status: PriceTrendStatus = 'UNCHANGED';
@@ -104,7 +114,7 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
         else if (diff < 0) status = 'DECREASED';
 
         existingGroup.previousUnitPrice = prevPrice;
-        existingGroup.currentUnitPrice = item.unitPrice;
+        existingGroup.currentUnitPrice = comparable.value;
         existingGroup.priceDiff = diff;
         existingGroup.percentChange = pct;
         existingGroup.status = status;
@@ -114,7 +124,7 @@ export function computePriceHistoryMap(bills: Bill[]): Map<string, PriceTrendSum
         existingGroup.totalQuantityBought += item.quantity;
         existingGroup.totalSpent += item.totalPrice;
 
-        const allPrices = existingGroup.history.map(h => h.unitPrice);
+        const allPrices = existingGroup.history.map(h => h.comparablePrice ?? h.unitPrice);
         existingGroup.minPrice = Math.min(...allPrices);
         existingGroup.maxPrice = Math.max(...allPrices);
         existingGroup.avgPrice = Math.round(
@@ -145,14 +155,16 @@ export function enrichBillItemsWithTrends(
     let previousUnitPrice: number | undefined = undefined;
     let firstPurchasedDate: string | undefined = undefined;
     const historicalPrices: number[] = [];
+    const currentComparable = getComparablePrice(item);
 
     // Search backwards in time
     for (const priorBill of priorBills) {
       for (const priorItem of priorBill.items) {
-        if (isSameProduct(priorItem.canonicalName, item.canonicalName)) {
-          historicalPrices.push(priorItem.unitPrice);
+        const priorComparable = getComparablePrice(priorItem);
+        if (isSameProduct(priorItem.canonicalName, item.canonicalName) && priorComparable.unit === currentComparable.unit) {
+          historicalPrices.push(priorComparable.value);
           if (previousUnitPrice === undefined) {
-            previousUnitPrice = priorItem.unitPrice;
+            previousUnitPrice = priorComparable.value;
           }
           firstPurchasedDate = priorBill.date;
         }
@@ -165,13 +177,16 @@ export function enrichBillItemsWithTrends(
         trendStatus: 'NEW' as PriceTrendStatus,
         priceDiff: 0,
         percentChange: 0,
-        lowestPrice: item.unitPrice,
-        highestPrice: item.unitPrice,
+        lowestPrice: currentComparable.value,
+        highestPrice: currentComparable.value,
         historicalCount: 1,
+        comparisonUnit: currentComparable.unit,
+        pricePerKg: currentComparable.pricePerKg,
+        isWeightNormalized: currentComparable.isWeightNormalized,
       };
     }
 
-    const priceDiff = item.unitPrice - previousUnitPrice;
+    const priceDiff = currentComparable.value - previousUnitPrice;
     const percentChange =
       previousUnitPrice > 0 ? (priceDiff / previousUnitPrice) * 100 : 0;
 
@@ -179,7 +194,7 @@ export function enrichBillItemsWithTrends(
     if (priceDiff > 0) trendStatus = 'INCREASED';
     else if (priceDiff < 0) trendStatus = 'DECREASED';
 
-    const allPrices = [item.unitPrice, ...historicalPrices];
+    const allPrices = [currentComparable.value, ...historicalPrices];
     const lowestPrice = Math.min(...allPrices);
     const highestPrice = Math.max(...allPrices);
 
@@ -193,6 +208,9 @@ export function enrichBillItemsWithTrends(
       lowestPrice,
       highestPrice,
       historicalCount: allPrices.length,
+      comparisonUnit: currentComparable.unit,
+      pricePerKg: currentComparable.pricePerKg,
+      isWeightNormalized: currentComparable.isWeightNormalized,
     };
   });
 }

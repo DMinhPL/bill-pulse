@@ -20,7 +20,7 @@ const PriceTrendBadge: React.FC<{ item: BillItemWithTrend }> = ({ item }) => {
       <div className="inline-flex flex-col items-center">
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
           <TrendingUp className="w-3 h-3 text-rose-400" />
-          +{formatVND(item.priceDiff, { showSign: false })} ({formatPercent(item.percentChange || 0)})
+          +{formatVND(item.priceDiff, { showSign: false })} / {item.comparisonUnit || item.unit} ({formatPercent(item.percentChange || 0)})
         </span>
         <span className="text-[10px] text-slate-400 mt-0.5">Trước: {formatVND(item.previousUnitPrice)}</span>
       </div>
@@ -31,7 +31,7 @@ const PriceTrendBadge: React.FC<{ item: BillItemWithTrend }> = ({ item }) => {
       <div className="inline-flex flex-col items-center">
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
           <TrendingDown className="w-3 h-3 text-emerald-400" />
-          {formatVND(item.priceDiff, { showSign: true })} ({formatPercent(item.percentChange || 0)})
+          {formatVND(item.priceDiff, { showSign: true })} / {item.comparisonUnit || item.unit} ({formatPercent(item.percentChange || 0)})
         </span>
         <span className="text-[10px] text-slate-400 mt-0.5">Trước: {formatVND(item.previousUnitPrice)}</span>
       </div>

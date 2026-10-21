@@ -14,6 +14,9 @@ export type PriceTrendStatus = 'INCREASED' | 'DECREASED' | 'UNCHANGED' | 'NEW';
 
 export interface BillItemWithTrend extends BillItem {
   previousUnitPrice?: number;
+  pricePerKg?: number;
+  comparisonUnit?: string;
+  isWeightNormalized?: boolean;
   priceDiff?: number; // current - previous
   percentChange?: number; // %
   trendStatus: PriceTrendStatus;
@@ -47,6 +50,11 @@ export interface Bill {
 export interface PricePoint {
   date: string;
   unitPrice: number;
+  totalPrice?: number;
+  comparablePrice?: number;
+  pricePerKg?: number;
+  priceUnit?: string;
+  isWeightNormalized?: boolean;
   store: string;
   billId: string;
   quantity: number;
@@ -57,6 +65,9 @@ export interface PriceTrendSummary {
   unit: string;
   category: string;
   currentUnitPrice: number;
+  pricePerKg?: number;
+  priceUnit?: string;
+  isWeightNormalized?: boolean;
   previousUnitPrice: number | null;
   priceDiff: number;
   percentChange: number;

@@ -18,9 +18,27 @@ import { Lookups } from './src/payload/globals/Lookups';
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default buildConfig({
-  admin: { user: Admins.slug, importMap: { baseDir: path.resolve(dirname, 'src') } },
+  admin: {
+    user: Admins.slug,
+    avatar: { Component: './payload/components/AdminAvatar.tsx' },
+    importMap: { baseDir: path.resolve(dirname, 'src') },
+    components: {
+      Nav: './payload/components/AdminNav.tsx',
+      beforeNavLinks: ['./payload/components/DashboardNavLink.tsx'],
+      views: {
+        dashboard: { Component: './payload/components/DashboardView.tsx' },
+      },
+    },
+  },
   routes: { admin: ADMIN_ROUTE },
-  collections: [Admins, Users, Products, BillCategories, Bills, SampleBills],
+  collections: [
+    Products,
+    Bills,
+    SampleBills,
+    Users,
+    Admins,
+    BillCategories,
+  ],
   globals: [AiSettings, Lookups],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET!,

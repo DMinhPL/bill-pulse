@@ -280,8 +280,8 @@ export const CategoryBrowserView: React.FC<CategoryBrowserViewProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">
-                    {pagedProducts.map(p => (
-                      <tr key={p.canonicalName} className={`category-browser__row category-browser__row--${p.status.toLowerCase()} hover:bg-slate-800/30 transition-colors`}>
+                    {pagedProducts.map((p, index) => (
+                      <tr key={`${p.canonicalName}-${p.priceUnit || p.unit}-${index}`} className={`category-browser__row category-browser__row--${p.status.toLowerCase()} hover:bg-slate-800/30 transition-colors`}>
                         <td className="category-browser__cell category-browser__cell--name py-3 px-4 min-w-[220px]">
                           <button
                             type="button"
