@@ -25,7 +25,7 @@ export type AnalyticsData = {
   }[]
   categories: { name: string; amount: number; quantity: number }[]
   trends: { month: string; orders: number; amount: number; quantity: number }[]
-  prices: { name: string; unit: string; isWeightNormalized: boolean; points: { month: string; price: number; users: string[] }[] }[]
+  prices: { name: string; category: string; unit: string; isWeightNormalized: boolean; points: { month: string; price: number; users: string[] }[] }[]
 }
 
 type BillItem = {
@@ -80,7 +80,7 @@ export async function getBillingAnalytics(payload: Payload, filters: AnalyticsFi
   const storeMap = new Map<string, { orders: number; amount: number; bills: { id: string; billNumber?: string; date?: string; amount: number }[] }>()
   const categoryMap = new Map<string, { amount: number; quantity: number }>()
   const trendMap = new Map<string, { orders: number; amount: number; quantity: number }>()
-  const priceMap = new Map<string, { name: string; unit: string; isWeightNormalized: boolean; months: Map<string, { total: number; count: number; users: Set<string> }> }>()
+  const priceMap = new Map<string, { name: string; category: string; unit: string; isWeightNormalized: boolean; months: Map<string, { total: number; count: number; users: Set<string> }> }>()
   const userNames = new Map((users.docs as User[]).map(user => [user.id, user.displayName || user.username || user.id]))
   let spend = 0
 
@@ -112,10 +112,12 @@ export async function getBillingAnalytics(payload: Payload, filters: AnalyticsFi
       trend.quantity += quantity
 
       const product = item.canonicalName?.trim() || item.rawName?.trim() || 'Unknown product'
+      const productCategory = item.category?.trim() || 'Uncategorized'
       const comparable = getComparablePrice(item)
-      const productKey = `${product}::${comparable.unit}`
+      const productKey = `${productCategory}::${product}::${comparable.unit}`
       const productEntry = priceMap.get(productKey) || {
         name: product,
+        category: productCategory,
         unit: comparable.unit,
         isWeightNormalized: comparable.isWeightNormalized,
         months: new Map<string, { total: number; count: number; users: Set<string> }>(),
@@ -148,8 +150,9 @@ export async function getBillingAnalytics(payload: Payload, filters: AnalyticsFi
     .slice(-12)
     .map(([month, value]) => ({ month, ...value }))
   const prices = [...priceMap.values()]
-    .map(({ name, unit, isWeightNormalized, months }) => ({
+    .map(({ name, category, unit, isWeightNormalized, months }) => ({
       name,
+      category,
       unit,
       isWeightNormalized,
       points: [...months.entries()]

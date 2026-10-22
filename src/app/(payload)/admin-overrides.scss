@@ -1272,6 +1272,58 @@
     padding-right: calc(var(--base) * 0.35);
   }
 
+  .bp-analytics-price-category {
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: calc(var(--base) * 0.45);
+  }
+
+  .bp-analytics-price-category + .bp-analytics-price-category {
+    margin-top: calc(var(--base) * 0.35);
+  }
+
+  .bp-analytics-price-category__title {
+    margin: 0;
+  }
+
+  .bp-analytics-price-category__toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: #f8fafc;
+    cursor: pointer;
+    display: flex;
+    font-size: 12px;
+    gap: calc(var(--base) * 0.3);
+    letter-spacing: 0.02em;
+    padding: calc(var(--base) * 0.35) 0;
+    text-align: left;
+    width: 100%;
+  }
+
+  .bp-analytics-price-category__toggle:focus-visible {
+    border-radius: var(--style-radius-s);
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+  }
+
+  .bp-analytics-price-category__chevron {
+    color: #f59e0b;
+    flex: 0 0 auto;
+    width: 12px;
+    transition: transform 160ms ease;
+  }
+
+  .bp-analytics-price-category__chevron.is-expanded {
+    transform: rotate(90deg);
+  }
+
+  .bp-analytics-price-category__title small {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+
   .bp-analytics-price-timeline {
     border-left: 1px solid #1e293b;
     min-width: 0;

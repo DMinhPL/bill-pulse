@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from 'chart.js'
 import { Bar, Doughnut, Line } from 'react-chartjs-2'
+import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 
 import { ADMIN_ROUTE } from '../adminRoute'
@@ -83,11 +84,24 @@ const currencyChartOptions = {
 
 export function BillingAnalyticsChart({ data }: { data: AnalyticsData }) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedProductName, setSelectedProductName] = useState(data.prices[0]?.name || '')
+  const productKey = (product: { name: string; category: string; unit: string }) => `${product.category}::${product.name}::${product.unit}`
+  const [selectedProductKey, setSelectedProductKey] = useState(data.prices[0] ? productKey(data.prices[0]) : '')
   const [selectedStoreName, setSelectedStoreName] = useState('')
-  const selectedProduct = data.prices.find(product => product.name === selectedProductName) || data.prices[0]
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const selectedProduct = data.prices.find(product => productKey(product) === selectedProductKey) || data.prices[0]
   const selectedStore = data.stores.find(store => store.name === selectedStoreName)
-  const filteredPrices = data.prices.filter(product => product.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()))
+  const normalizedSearchTerm = searchTerm.toLocaleLowerCase()
+  const filteredPrices = data.prices.filter(product => (
+    product.name.toLocaleLowerCase().includes(normalizedSearchTerm)
+    || product.category.toLocaleLowerCase().includes(normalizedSearchTerm)
+  ))
+  const groupedPrices = filteredPrices.reduce((groups, product) => {
+    const category = product.category || 'Uncategorized'
+    const products = groups.get(category) || []
+    products.push(product)
+    groups.set(category, products)
+    return groups
+  }, new Map<string, typeof filteredPrices>())
   const storeData = {
     labels: data.stores.map(store => store.name),
     datasets: [{
@@ -278,35 +292,71 @@ export function BillingAnalyticsChart({ data }: { data: AnalyticsData }) {
             <h3>Recent price changes</h3>
           </div>
           <input
-            aria-label="Search products"
+            aria-label="Search products or categories"
             className="bp-analytics-price-search"
             onChange={event => setSearchTerm(event.target.value)}
-            placeholder="Search products"
+            placeholder="Search products or categories"
             type="search"
             value={searchTerm}
           />
         </div>
         <div className="bp-analytics-price-layout">
           <div className="bp-analytics-price-list">
-            {filteredPrices.map((product, index) => {
-              const first = product.points[0]?.price || 0
-              const last = product.points.at(-1)?.price || first
-              const change = first && product.points.length > 1 ? ((last - first) / first) * 100 : 0
-              const state = change > 0 ? 'is-up' : change < 0 ? 'is-down' : 'is-stable'
+            {[...groupedPrices.entries()].map(([category, products], categoryIndex) => {
+              const isCollapsed = collapsedCategories.has(category)
+              const categoryId = `bp-analytics-price-category-${categoryIndex}`
 
               return (
-                <button
-                  aria-pressed={selectedProduct?.name === product.name}
-                  className={`bp-analytics-price-row ${selectedProduct?.name === product.name ? 'is-selected' : ''}`}
-                  key={`${product.name}-${product.unit}-${index}`}
-                  onClick={() => setSelectedProductName(product.name)}
-                  type="button"
-                >
-                  <span>{product.name}</span>
-                  <strong className={state}>
-                    {change > 0 ? '+' : ''}{change.toFixed(1)}%
-                  </strong>
-                </button>
+              <section className="bp-analytics-price-category" key={category}>
+                <h4 className="bp-analytics-price-category__title">
+                  <button
+                    aria-controls={categoryId}
+                    aria-expanded={!isCollapsed}
+                    className="bp-analytics-price-category__toggle"
+                    onClick={() => {
+                      setCollapsedCategories(current => {
+                        const next = new Set(current)
+                        if (next.has(category)) next.delete(category)
+                        else next.add(category)
+                        return next
+                      })
+                    }}
+                    type="button"
+                  >
+                      <ChevronRight
+                        aria-hidden="true"
+                        className={`bp-analytics-price-category__chevron ${isCollapsed ? '' : 'is-expanded'}`}
+                        size={14}
+                        strokeWidth={2.25}
+                      />
+                    <span>{category}</span>
+                    <small>{products.length} {products.length === 1 ? 'product' : 'products'}</small>
+                  </button>
+                </h4>
+                <div className="bp-analytics-price-category__items" hidden={isCollapsed} id={categoryId}>
+                  {products.map((product, index) => {
+                  const first = product.points[0]?.price || 0
+                  const last = product.points.at(-1)?.price || first
+                  const change = first && product.points.length > 1 ? ((last - first) / first) * 100 : 0
+                  const state = change > 0 ? 'is-up' : change < 0 ? 'is-down' : 'is-stable'
+
+                  return (
+                    <button
+                      aria-pressed={selectedProduct ? productKey(selectedProduct) === productKey(product) : false}
+                      className={`bp-analytics-price-row ${selectedProduct && productKey(selectedProduct) === productKey(product) ? 'is-selected' : ''}`}
+                      key={`${product.category}-${product.name}-${product.unit}-${index}`}
+                      onClick={() => setSelectedProductKey(productKey(product))}
+                      type="button"
+                    >
+                      <span>{product.name}</span>
+                      <strong className={state}>
+                        {change > 0 ? '+' : ''}{change.toFixed(1)}%
+                      </strong>
+                    </button>
+                  )
+                  })}
+                </div>
+              </section>
               )
             })}
             {!filteredPrices.length && <p className="bp-analytics-empty">No products found.</p>}
