@@ -3,6 +3,7 @@ import * as migration_20261021_093134 from './20261021_093134';
 import * as migration_20261021_102056 from './20261021_102056';
 import * as migration_20261021_104527_invitation_codes from './20261021_104527_invitation_codes';
 import * as migration_20261021_105000_invitation_code_user_cascade from './20261021_105000_invitation_code_user_cascade';
+import * as migration_20261022_000000_user_bills_cascade from './20261022_000000_user_bills_cascade';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20261021_105000_invitation_code_user_cascade.up,
     down: migration_20261021_105000_invitation_code_user_cascade.down,
     name: '20261021_105000_invitation_code_user_cascade',
+  },
+  {
+    up: migration_20261022_000000_user_bills_cascade.up,
+    down: migration_20261022_000000_user_bills_cascade.down,
+    name: '20261022_000000_user_bills_cascade',
   },
 ];
