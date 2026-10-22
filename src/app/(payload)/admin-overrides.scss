@@ -548,6 +548,71 @@
     padding-top: calc(var(--base) * 0.8);
   }
 
+  .document-fields:has(.bp-currency-field) .document-fields__main {
+    background: linear-gradient(145deg, #0b1428 0%, #101d35 100%);
+    border: 1px solid #344b73;
+    border-radius: 18px;
+    box-shadow: 0 22px 55px rgb(2 6 23 / 35%), inset 0 1px 0 rgb(148 163 184 / 8%);
+    max-width: 1080px;
+    padding: calc(var(--base) * 1.5);
+    position: relative;
+  }
+
+  .document-fields:has(.bp-currency-field) .document-fields__main::before {
+    background: linear-gradient(90deg, #818cf8, #38bdf8, #f59e0b);
+    border-radius: 18px 18px 0 0;
+    content: '';
+    height: 3px;
+    left: -1px;
+    position: absolute;
+    right: -1px;
+    top: -1px;
+  }
+
+  .document-fields:has(.bp-currency-field) .field-type.text input[readonly],
+  .document-fields:has(.bp-currency-field) .field-type.number input[readonly],
+  .document-fields:has(.bp-currency-field) .field-type.textarea textarea[readonly] {
+    background: rgb(15 28 51 / 82%);
+    border-color: #30476d;
+    box-shadow: inset 0 1px 0 rgb(148 163 184 / 5%);
+    cursor: default;
+  }
+
+  .document-fields:has(.bp-currency-field) .field-type.text input[readonly]:hover,
+  .document-fields:has(.bp-currency-field) .field-type.number input[readonly]:hover,
+  .document-fields:has(.bp-currency-field) .field-type.textarea textarea[readonly] {
+    border-color: #506b98;
+  }
+
+  .document-fields:has(.bp-currency-field) .collapsible-field {
+    background: linear-gradient(145deg, rgb(15 27 49 / 96%), rgb(12 23 42 / 96%));
+    border: 1px solid #344d78;
+    border-left: 3px solid #6366f1;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgb(2 6 23 / 22%);
+    margin-top: calc(var(--base) * 1.1);
+    padding: calc(var(--base) * 0.9);
+  }
+
+  .document-fields:has(.bp-currency-field) .array-field__draggable-rows > * {
+    background: linear-gradient(145deg, #142642, #101f38);
+    border: 1px solid #3c5b8b;
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgb(148 163 184 / 5%);
+  }
+
+  .document-fields:has(.bp-currency-field) .field-label,
+  .document-fields:has(.bp-currency-field) .field-label span {
+    color: #b9c8e8;
+    letter-spacing: 0.02em;
+  }
+
+  .document-fields:has(.bp-currency-field) .collapsible-field__row-label-wrap,
+  .document-fields:has(.bp-currency-field) .array-field__title {
+    color: #f8fafc;
+    font-weight: 700;
+  }
+
   .collection-edit .field-type.text input,
   .collection-edit .field-type.number input,
   .collection-edit .field-type.textarea textarea,
@@ -709,6 +774,30 @@
   .collection-edit .field-label span {
     color: #e2e8f0;
     font-weight: 600;
+  }
+
+  .bp-currency-field__value {
+    align-items: center;
+    background: linear-gradient(135deg, #172b4b, #10203a);
+    border: 1px solid #456694;
+    border-radius: 10px;
+    color: #e7efff;
+    display: flex;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    justify-content: flex-end;
+    min-height: 40px;
+    padding: 8px 15px;
+    width: 100%;
+  }
+
+  .bp-currency-field--total .bp-currency-field__value {
+    background: linear-gradient(135deg, #4b2d0b, #8a4b0f 55%, #b45309);
+    border-color: #f59e0b;
+    box-shadow: 0 8px 22px rgb(245 158 11 / 20%), inset 0 1px 0 rgb(255 255 255 / 16%);
+    color: #fff7d6;
+    font-size: 17px;
+    letter-spacing: 0.01em;
   }
 
   .collection-edit .collapsible-field,

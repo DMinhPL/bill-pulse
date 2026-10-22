@@ -1,3 +1,4 @@
+import { default as default_675183531f22f616498c4047e928279c } from '../../../payload/components/CurrencyField.tsx'
 import { default as default_c3c42da6b074d8ebd469a140f01dd459 } from '../../../payload/components/BillItemRowLabel.tsx'
 import { default as default_bbd345e003676122b571fcfb815b36e9 } from '../../../payload/components/InvitationCodeCell.tsx'
 import { default as default_a8bed5df7491776af7983ef624d0952a } from '../../../payload/components/InvitationCodeField.tsx'
@@ -9,6 +10,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "./payload/components/CurrencyField.tsx#default": default_675183531f22f616498c4047e928279c,
   "./payload/components/BillItemRowLabel.tsx#default": default_c3c42da6b074d8ebd469a140f01dd459,
   "./payload/components/InvitationCodeCell.tsx#default": default_bbd345e003676122b571fcfb815b36e9,
   "./payload/components/InvitationCodeField.tsx#default": default_a8bed5df7491776af7983ef624d0952a,

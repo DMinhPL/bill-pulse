@@ -22,14 +22,14 @@ const itemFields: Field[] = [
     fields: [
       { name: 'unit', type: 'text', required: true, defaultValue: 'cái' },
       { name: 'quantity', type: 'number', required: true, min: 0.001 },
-      { name: 'unitPrice', type: 'number', required: true, min: 0 },
-      { name: 'totalPrice', type: 'number', required: true, min: 0 },
+      { name: 'unitPrice', type: 'number', required: true, min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
+      { name: 'totalPrice', type: 'number', required: true, min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
     ],
   },
   {
     type: 'row',
     fields: [
-      { name: 'discount', type: 'number', min: 0 },
+      { name: 'discount', type: 'number', min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
       { name: 'category', type: 'text' },
     ],
   },
@@ -61,10 +61,10 @@ export const billFields: Field[] = [
       {
         type: 'row',
         fields: [
-          { name: 'subtotal', type: 'number', required: true, min: 0 },
-          { name: 'discountTotal', type: 'number', min: 0 },
-          { name: 'vat', type: 'number', min: 0 },
-          { name: 'totalAmount', type: 'number', required: true, min: 0 },
+          { name: 'subtotal', type: 'number', required: true, min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
+          { name: 'discountTotal', type: 'number', min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
+          { name: 'vat', type: 'number', min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
+          { name: 'totalAmount', type: 'number', required: true, min: 0, admin: { components: { Field: './payload/components/CurrencyField.tsx' } } },
         ],
       },
     ],
